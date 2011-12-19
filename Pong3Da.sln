@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pong3Da", "Pong3Da\Pong3Da\Pong3Da.csproj", "{5E3E40EC-6F32-4B34-99B7-B7FC8C011686}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pong3DaContent", "Pong3Da\Pong3DaContent\Pong3DaContent.contentproj", "{7A9A289C-E42B-4E79-B0EE-FF6686E7C070}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5E3E40EC-6F32-4B34-99B7-B7FC8C011686}.Debug|x86.ActiveCfg = Debug|x86
+		{5E3E40EC-6F32-4B34-99B7-B7FC8C011686}.Debug|x86.Build.0 = Debug|x86
+		{5E3E40EC-6F32-4B34-99B7-B7FC8C011686}.Release|x86.ActiveCfg = Release|x86
+		{5E3E40EC-6F32-4B34-99B7-B7FC8C011686}.Release|x86.Build.0 = Release|x86
+		{7A9A289C-E42B-4E79-B0EE-FF6686E7C070}.Debug|x86.ActiveCfg = Debug|x86
+		{7A9A289C-E42B-4E79-B0EE-FF6686E7C070}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
