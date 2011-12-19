@@ -32,7 +32,7 @@ namespace Pong3Da
 
         MouseState prevMouseState;
 
-        float speed = 0.05f;
+        float speed = 0.06f;
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
