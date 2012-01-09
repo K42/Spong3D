@@ -46,15 +46,10 @@ namespace Pong3Da {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime) {
             //// TODO: Add your update code here
-            if (freeze != true) {
-                Bounce();
+            if (!freeze) {
+                position += ballSpeed * direction;
             }
             base.Update(gameTime);
-        }
-
-
-        private void Bounce() {
-            position += ballSpeed * direction;
         }
 
         //rysowanie pilki

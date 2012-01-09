@@ -10,13 +10,11 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 
-namespace Pong3Da
-{
+namespace Pong3Da {
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class Camera : Microsoft.Xna.Framework.GameComponent
-    {
+    public class Camera : Microsoft.Xna.Framework.GameComponent {
         public Matrix view { get; protected set; }
         public Matrix projection { get; protected set; }
 
@@ -25,7 +23,7 @@ namespace Pong3Da
         // ale jak siê mija bieguny to siê kierunki pierdol¹, wiêc lepiej niech jest
         public float maxPitch = 1.45f;
         // chaos w dostêpach, póŸniej mo¿na poprawiæ co ma byæ public a co private
-        public float yaw { get; set; } 
+        public float yaw { get; set; }
         public float pitch { get; set; }
         public Vector3 position { get; protected set; }
         private Vector3 desiredPosition;
@@ -33,10 +31,9 @@ namespace Pong3Da
         private Vector3 desiredTarget;
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
-        
+
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
-            : base(game)
-        {
+            : base(game) {
             position = pos;
             desiredPosition = position;
             target = new Vector3();
@@ -46,19 +43,18 @@ namespace Pong3Da
 
             yaw = 0.0f;
             pitch = 0.0f;
-            
+
             cameraRotation = Matrix.Identity;
 
             projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,
-                (float)Game.Window.ClientBounds.Width /
-                (float)Game.Window.ClientBounds.Height,
+                MathHelper.PiOver2 * 0.9f,
+                (float) Game.Window.ClientBounds.Width /
+                (float) Game.Window.ClientBounds.Height,
                 1, 1000);
 
             CreateLookAt();
         }
-        private void reset()
-        {
+        private void reset() {
             position = new Vector3(0, 0, 50);
             desiredPosition = position;
             target = new Vector3();
@@ -68,13 +64,13 @@ namespace Pong3Da
 
             yaw = 0.0f;
             pitch = 0.0f;
-            
+
             cameraRotation = Matrix.Identity;
             view = Matrix.Identity;
             projection = Matrix.CreatePerspectiveFieldOfView(
                 MathHelper.PiOver4,
-                (float)Game.Window.ClientBounds.Width /
-                (float)Game.Window.ClientBounds.Height,
+                (float) Game.Window.ClientBounds.Width /
+                (float) Game.Window.ClientBounds.Height,
                 1, 1000);
             CreateLookAt();
         }
@@ -82,8 +78,7 @@ namespace Pong3Da
         /// Allows the game component to perform any initialization it needs to before starting
         /// to run.  This is where it can query for any required services and load content.
         /// </summary>
-        public override void Initialize()
-        {
+        public override void Initialize() {
             // TODO: Add your initialization code here
             base.Initialize();
         }
@@ -92,29 +87,24 @@ namespace Pong3Da
         /// Allows the game component to update itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public override void Update(GameTime gameTime)
-        {
+        public override void Update(GameTime gameTime) {
             if (Keyboard.GetState().IsKeyDown(Keys.R)) reset();
             KeyboardState keyboardState = Keyboard.GetState();
 
             //Rotate Camera
             //if (keyboardState.IsKeyDown(Keys.P)) test++;
 
-            if (keyboardState.IsKeyDown(Keys.D))
-            {
-                    yaw += .05f;
+            if (keyboardState.IsKeyDown(Keys.D)) {
+                yaw += .05f;
             }
-            if (keyboardState.IsKeyDown(Keys.A))
-            {
-                    yaw += -.05f;
+            if (keyboardState.IsKeyDown(Keys.A)) {
+                yaw += -.05f;
             }
-            if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch)
-            {
-                    pitch += -.05f;
+            if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch) {
+                pitch += -.05f;
             }
-            if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch)
-            {
-                    pitch += .05f;
+            if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch) {
+                pitch += .05f;
             }
             // Recreate the camera view matrix
             UpdateView();
@@ -122,8 +112,7 @@ namespace Pong3Da
 
             base.Update(gameTime);
         }
-        private void UpdateView()
-        {
+        private void UpdateView() {
             cameraRotation.Forward.Normalize();
 
             cameraRotation = Matrix.CreateRotationX(pitch) * Matrix.CreateRotationY(yaw);
@@ -134,8 +123,7 @@ namespace Pong3Da
             target = Vector3.Zero;
         }
 
-        private void CreateLookAt()
-        {
+        private void CreateLookAt() {
             //view = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
             view = Matrix.CreateLookAt(position, target, cameraRotation.Up);
         }
