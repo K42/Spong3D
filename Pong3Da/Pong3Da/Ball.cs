@@ -18,12 +18,13 @@ namespace Pong3Da {
 
         public bool freeze { get; set; }
 
+        Random r = new Random();
+
         public Ball(Game game)
             : base(game) {
-            Random r = new Random();
             position = Vector3.Zero;
             freeze = true;
-            ballSpeed = Vector3.One * 0.15f;
+            ballSpeed = Vector3.One * 0.5f;
             direction = new Vector3((float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5));
             direction.Normalize();
             model = Game.Content.Load<Model>(@"models\testbox");
@@ -52,6 +53,13 @@ namespace Pong3Da {
             base.Update(gameTime);
         }
 
+        public void ChangeDirectionAtRandom() {
+            direction = Vector3.Negate(direction);
+            direction = Vector3.Transform(direction,
+                Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
+            direction.Normalize();
+        }
+
         //rysowanie pilki
         public void Draw(Camera camera) {
             Matrix[] transforms = new Matrix[model.Bones.Count];
@@ -71,6 +79,5 @@ namespace Pong3Da {
         public virtual Matrix GetWorld() {
             return world;
         }
-
     }
 }

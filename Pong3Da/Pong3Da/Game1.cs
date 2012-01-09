@@ -21,6 +21,7 @@ namespace Pong3Da {
         private Player player1;
         BasicModel sphere;
         BoundingSphere playDome;
+        bool baal;
 
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
@@ -89,17 +90,15 @@ namespace Pong3Da {
                 + " maxPitch = " + camera.maxPitch;
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();
-            if (Keyboard.GetState().IsKeyDown(Keys.P)) {
-                BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
-                if (Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) {
-                    //punkt!
-                    ball.freeze = false; //pilka stop
-                } else {
-                    ball.direction = Vector3.Negate(ball.direction);
-                    ball.freeze = false;
-                }
+            if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
+                ball.freeze = !ball.freeze;
+            }
+            baal = Keyboard.GetState().IsKeyDown(Keys.P);
+            BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
+            if (Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) {
+                //punkt!
             } else {
-                ball.freeze = true;
+                ball.ChangeDirectionAtRandom();
             }
 
             // TODO: Add your update logic here
