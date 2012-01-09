@@ -19,9 +19,11 @@ namespace Pong3Da
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public Camera camera {get; protected set;}
+        private Ball ball;
+        private Player player1;
+        BasicModel sphere; 
+        BoundingSphere playDome;
 
-        ModelManager modelManager;
-        
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -37,11 +39,12 @@ namespace Pong3Da
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            camera = new Camera(this, new Vector3(0, 0, 20), Vector3.Zero, Vector3.Up); 
-            modelManager = new ModelManager(this);
+            camera = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up); 
+            ball = new Ball(this);
+            player1 = new Player(this, camera);
 
-            Components.Add(modelManager);
             Components.Add(camera);
+            Components.Add(ball);
 
             Window.AllowUserResizing = true;
             base.Initialize();
@@ -55,7 +58,9 @@ namespace Pong3Da
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            //texture = Content.Load<Texture2D>(@"textures\light");
+
+            sphere = new BasicModel(Content.Load<Model>(@"models\sfera2"), "sphere");
+            playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
             // Initialize vertices
 
             // Initialize the BasicEffect
@@ -76,7 +81,7 @@ namespace Pong3Da
         {
             // TODO: Unload any non ContentManager content here
         }
-
+        
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -84,19 +89,29 @@ namespace Pong3Da
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            Window.Title = " x = " + camera.cameraPosition.X 
-                + " y = " + camera.cameraPosition.Y 
-                + " z = " + camera.cameraPosition.Z
-                + " curY = " + camera.currentPitch
-                + " totY = " + camera.totalPitch;
+            Window.Title = " x = " + ball.position.X 
+                + " y = " + ball.position.Y 
+                + " z = " + ball.position.Z
+                + " pitch = " + camera.pitch
+                + " maxPitch = " + camera.maxPitch;
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();
-
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
+            {                
+                BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
+                if (b.Intersects(playDome))
+                {
+                    //punkt!
+                    ball.freeze = false; //pilka stop
+                }
+                else ball.freeze = true;
+            }
+            else ball.freeze = true;
+            
             // TODO: Add your update logic here
 
             base.Update(gameTime);
-        }
-        
+        }        
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -104,7 +119,9 @@ namespace Pong3Da
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-                        
+            ball.Draw(camera);
+            sphere.Draw(camera);
+            player1.Draw(camera);
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);

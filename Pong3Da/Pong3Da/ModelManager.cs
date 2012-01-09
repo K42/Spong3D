@@ -38,7 +38,8 @@ namespace Pong3Da
         
         protected override void LoadContent()
         {
-            models.Add(new BasicModel(Game.Content.Load<Model>(@"models\sfera")));
+            models.Add(new BasicModel(Game.Content.Load<Model>(@"models\sfera2"), "sphere"));
+            //models.Add(new BasicModel(Game.Content.Load<Model>(@"models\testbox"), "ball"));
 
             base.LoadContent();
         }

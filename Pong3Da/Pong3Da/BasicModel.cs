@@ -5,16 +5,19 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+//dziwna bezuzyteczna klasa.
 namespace Pong3Da
 {
     class BasicModel
     {
+        public String modelID { get; protected set; }
         public Model model { get; protected set; }
         protected Matrix world = Matrix.Identity;
 
-        public BasicModel(Model m)
+        public BasicModel(Model m, String ID)
         {
             model = m;
+            modelID = ID;
         }
 
         public virtual void Update()
@@ -25,6 +28,7 @@ namespace Pong3Da
         {
             Matrix[] transforms = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(transforms);
+
             foreach (ModelMesh mesh in model.Meshes)
             {
                 foreach (BasicEffect be in mesh.Effects)

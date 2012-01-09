@@ -21,41 +21,61 @@ namespace Pong3Da
         public Matrix projection { get; protected set; }
 
         public Vector3 cameraPosition { get; protected set; }
-        Vector3 cameraDirection;
-        Vector3 cameraUp;
-
-        // Max yaw/pitch variables
-        public float totalYaw = 50000; // MathHelper.Pi / 2;
-        public float currentYaw = 0;
-        public float totalPitch = 500000;
-        public float currentPitch = 0;
-
-        MouseState prevMouseState;
-
-        float speed = 0.06f;
-
+        // max odchylenie góra-dó³, mo¿na pomin¹æ, bo dzia³a w miare normalnie 
+        // ale jak siê mija bieguny to siê kierunki pierdol¹, wiêc lepiej niech jest
+        public float maxPitch = 1.45f;
+        // chaos w dostêpach, póŸniej mo¿na poprawiæ co ma byæ public a co private
+        public float yaw { get; set; } 
+        public float pitch { get; set; }
+        public Vector3 position { get; protected set; }
+        private Vector3 desiredPosition;
+        private Vector3 target;
+        private Vector3 desiredTarget;
+        private Vector3 offsetDistance;
+        private Matrix cameraRotation;
+        
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
         {
-            // Build camera view matrix
-            cameraPosition = pos;
-            cameraDirection = target - pos;
-            cameraDirection.Normalize();
-            cameraUp = up;
-            CreateLookAt();
+            position = pos;
+            desiredPosition = position;
+            target = new Vector3();
+            desiredTarget = target;
+
+            offsetDistance = new Vector3(0, 0, 50);
+
+            yaw = 0.0f;
+            pitch = 0.0f;
+            
+            cameraRotation = Matrix.Identity;
 
             projection = Matrix.CreatePerspectiveFieldOfView(
                 MathHelper.PiOver4,
                 (float)Game.Window.ClientBounds.Width /
                 (float)Game.Window.ClientBounds.Height,
                 1, 1000);
+
+            CreateLookAt();
         }
         private void reset()
         {
-            cameraPosition = new Vector3(0, 0, 20);
-            cameraDirection = Vector3.Zero - cameraPosition;
-            cameraDirection.Normalize();
-            cameraUp = Vector3.Up;
+            position = new Vector3(0, 0, 50);
+            desiredPosition = position;
+            target = new Vector3();
+            desiredTarget = target;
+
+            offsetDistance = new Vector3(0, 0, 50);
+
+            yaw = 0.0f;
+            pitch = 0.0f;
+            
+            cameraRotation = Matrix.Identity;
+            view = Matrix.Identity;
+            projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                (float)Game.Window.ClientBounds.Width /
+                (float)Game.Window.ClientBounds.Height,
+                1, 1000);
             CreateLookAt();
         }
         /// <summary>
@@ -65,11 +85,6 @@ namespace Pong3Da
         public override void Initialize()
         {
             // TODO: Add your initialization code here
-            // Set mouse position and do initial get state
-            Mouse.SetPosition(Game.Window.ClientBounds.Width / 2,
-                Game.Window.ClientBounds.Height / 2);
-            prevMouseState = Mouse.GetState();
-
             base.Initialize();
         }
 
@@ -80,67 +95,49 @@ namespace Pong3Da
         public override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.R)) reset();
+            KeyboardState keyboardState = Keyboard.GetState();
 
-            if (Math.Abs(currentYaw) > totalYaw)
-            {
-                if (currentYaw < 0) currentYaw = -totalYaw - speed;
-                else currentYaw = totalYaw + speed;
-            }
-            if (Math.Abs(currentPitch) > totalPitch)
-            {
-                if (currentPitch < 0) currentPitch = -totalPitch - speed;
-                else currentPitch = totalPitch + speed;
-            }
-            // Move forward/backward
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                if (Math.Abs(currentYaw) <= totalYaw)
-                {
-                    cameraPosition = Vector3.Transform(cameraPosition, Matrix.CreateRotationY(-speed));
-                    cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(cameraUp, -speed));
-                }
-                currentYaw -= speed;
-            }
+            //Rotate Camera
+            //if (keyboardState.IsKeyDown(Keys.P)) test++;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            if (keyboardState.IsKeyDown(Keys.D))
             {
-                if (Math.Abs(currentYaw) <= totalYaw)
-                {
-                    cameraPosition = Vector3.Transform(cameraPosition, Matrix.CreateRotationY(speed));
-                    cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateFromAxisAngle(cameraUp, speed));
-                }
-                currentYaw += speed;
+                    yaw += .05f;
             }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if (keyboardState.IsKeyDown(Keys.A))
             {
-                if (Math.Abs(currentPitch) <= totalPitch)
-                {
-                    cameraPosition = Vector3.Transform(cameraPosition, Matrix.CreateRotationX(-speed));
-                    cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateRotationX(-speed));                    
-                }
-                currentPitch -= speed;
+                    yaw += -.05f;
             }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch)
             {
-                if (Math.Abs(currentPitch) <= totalPitch)
-                {
-                    cameraPosition = Vector3.Transform(cameraPosition, Matrix.CreateRotationX(speed));
-                    cameraDirection = Vector3.Transform(cameraDirection, Matrix.CreateRotationX(speed));                    
-                }
-                currentPitch += speed;
+                    pitch += -.05f;
             }
-
+            if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch)
+            {
+                    pitch += .05f;
+            }
             // Recreate the camera view matrix
+            UpdateView();
             CreateLookAt();
 
             base.Update(gameTime);
         }
+        private void UpdateView()
+        {
+            cameraRotation.Forward.Normalize();
+
+            cameraRotation = Matrix.CreateRotationX(pitch) * Matrix.CreateRotationY(yaw);
+
+            desiredPosition = Vector3.Transform(offsetDistance, cameraRotation);
+            //desiredPosition += chasedObjectsWorld.Translation;
+            position = desiredPosition;
+            target = Vector3.Zero;
+        }
 
         private void CreateLookAt()
         {
-            view = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
+            //view = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
+            view = Matrix.CreateLookAt(position, target, cameraRotation.Up);
         }
     }
 }
