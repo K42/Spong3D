@@ -39,7 +39,7 @@ namespace Pong3Da {
             target = new Vector3();
             desiredTarget = target;
 
-            offsetDistance = new Vector3(0, 0, 50);
+            offsetDistance = new Vector3(0, 0, 80);
 
             yaw = 0.0f;
             pitch = 0.0f;

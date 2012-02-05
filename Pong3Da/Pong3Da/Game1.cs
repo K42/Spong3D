@@ -111,6 +111,7 @@ namespace Pong3Da {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
             ball.Draw(camera);
             sphere.Draw(camera);
             player1.Draw(camera);

@@ -33,6 +33,8 @@ namespace Pong3Da
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
+                    be.Alpha = 0.25f;
+                    be.LightingEnabled = true;
                     be.EnableDefaultLighting();
                     be.Projection = camera.projection;
                     be.View = camera.view;
