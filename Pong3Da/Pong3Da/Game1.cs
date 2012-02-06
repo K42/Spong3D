@@ -18,7 +18,7 @@ namespace Pong3Da {
         SpriteBatch spriteBatch;
         public Camera camera { get; protected set; }
         private Ball ball;
-        private Player player1;
+        private Player player1;//, player2;
         BasicModel sphere;
         BoundingSphere playDome;
         bool baal;
@@ -39,6 +39,7 @@ namespace Pong3Da {
             camera = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up);
             ball = new Ball(this);
             player1 = new Player(this, camera);
+            //player2 = new Player(this, camera);
 
             Components.Add(camera);
             Components.Add(ball);
@@ -63,9 +64,9 @@ namespace Pong3Da {
             //effect = new BasicEffect(GraphicsDevice);
 
             // Set cullmode to none
-            RasterizerState rs = new RasterizerState();
-            rs.CullMode = CullMode.None;
-            GraphicsDevice.RasterizerState = rs;
+            //RasterizerState rs = new RasterizerState();
+            //rs.CullMode = CullMode.None;
+            //GraphicsDevice.RasterizerState = rs;
             // TODO: use this.Content to load your game content here
         }
 
@@ -87,7 +88,8 @@ namespace Pong3Da {
                 + " y = " + ball.position.Y
                 + " z = " + ball.position.Z
                 + " pitch = " + camera.pitch
-                + " maxPitch = " + camera.maxPitch;
+                + " maxPitch = " + camera.maxPitch
+                + " P1 pts = " + player1.pts;
             // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();
             if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
@@ -98,6 +100,12 @@ namespace Pong3Da {
             if (Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) {
                 //punkt!
             } else {
+                ball.ChangeDirectionAtRandom();
+            }
+            if ((Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) &&
+                Vector3.Distance(b.Center, player1.position) < 10)
+            {
+                player1.pts++;
                 ball.ChangeDirectionAtRandom();
             }
 
@@ -111,11 +119,16 @@ namespace Pong3Da {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Black);
+            
             ball.Draw(camera);
-            sphere.Draw(camera);
-            player1.Draw(camera);
+            //GraphicsDevice.BlendState = BlendState.Opaque;
+            
             // TODO: Add your drawing code here
-
+            
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            player1.Draw(camera);
+            sphere.Draw(camera);
+            GraphicsDevice.BlendState = BlendState.Opaque;
             base.Draw(gameTime);
         }
     }

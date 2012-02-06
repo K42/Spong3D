@@ -25,6 +25,8 @@ namespace Pong3Da
         public Vector3 position { get; protected set; }
         public float speed { get; protected set; }
         private Model model;
+        private float[] dim = new float[5];
+        //public BoundingBox bb;// { get; protected set; }
 
         protected Matrix world = Matrix.Identity;
 
@@ -32,9 +34,10 @@ namespace Pong3Da
         public Player(Game game, Camera camera)
             : base(game)
         {
-            position = camera.position;
+            position = new Vector3(0, 0, 50); //camera.position;
             speed = 0.5f;
             model = Game.Content.Load<Model>(@"models\plate3");
+            //bb = new BoundingBox();
             // TODO: Construct any child components here
         }
 
@@ -61,17 +64,28 @@ namespace Pong3Da
         }
         public void Draw(Camera camera)
         {
+            dim = camera.getDim();
             Matrix[] transforms = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(transforms);
-
+            Matrix plateRotation = Matrix.Identity;
+            plateRotation.Forward.Normalize();
+            //position = camera.position;
+            plateRotation = Matrix.CreateRotationX(camera.getDim()[3]) * Matrix.CreateRotationY(camera.getDim()[4]);
+            position = Vector3.Transform(new Vector3(0, 0, 55), plateRotation);
             foreach (ModelMesh mesh in model.Meshes)
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
+                    be.Alpha = 0.25f;
                     be.EnableDefaultLighting();
                     be.Projection = camera.projection;
                     be.View = camera.view;
-                    be.World = GetWorld() * mesh.ParentBone.Transform *Matrix.CreateTranslation(position) * Matrix.CreateTranslation(new Vector3(0.0f, 0.0f, -15.0f)) ;
+                    be.World = GetWorld() * mesh.ParentBone.Transform *
+                        Matrix.CreateRotationX(camera.getDim()[3]) *
+                        Matrix.CreateRotationX(MathHelper.ToRadians(90)) * 
+                        Matrix.CreateRotationY(camera.getDim()[4]) *
+                        Matrix.CreateScale(3.0f) *
+                        Matrix.CreateTranslation(position);
                 }
                 mesh.Draw();
             }
@@ -81,6 +95,6 @@ namespace Pong3Da
         {
             return world;
         }
-
+        
     }
 }
