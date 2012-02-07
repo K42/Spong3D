@@ -13,6 +13,22 @@ namespace Pong3Da {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
+    /// 
+    public enum GameState
+    { 
+        MainMenu,
+        SettingsMenu,
+        MpMenu,
+        InGameDuringRound,
+        InGameAfterScore,
+        GameOver
+    }
+
+    public enum MultiType
+    { 
+        Split,
+        TcpIP
+    }
     public class Game1 : Microsoft.Xna.Framework.Game {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -22,10 +38,20 @@ namespace Pong3Da {
         BasicModel sphere;
         BoundingSphere playDome;
         bool baal;
-
+        //-------------------NIE RUSZAĆ------------------------
+        GameState gs = new GameState();
+        Song dubstep_intro;
+        int x, y;
+        Texture2D intro_ball;
+        Vector2 speed;
+        //----------------------------------------------------
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            Window.AllowUserResizing = false;
+            this.graphics.IsFullScreen = true;
+            this.graphics.PreferredBackBufferWidth = 1920;
+            this.graphics.PreferredBackBufferHeight = 1080;
         }
 
         /// <summary>
@@ -37,27 +63,35 @@ namespace Pong3Da {
         protected override void Initialize() {
             // TODO: Add your initialization logic here
             camera = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up);
+            
             ball = new Ball(this);
             player1 = new Player(this, camera);
+            Random rnd = new Random();
+            x = rnd.Next(100,   1000);
+            y = rnd.Next(100, 1000);
+            speed = new Vector2(rnd.Next(-10,10), rnd.Next(-10,10));
             //player2 = new Player(this, camera);
 
             Components.Add(camera);
             Components.Add(ball);
 
-            Window.AllowUserResizing = true;
+           
+            
+
+            gs = GameState.MainMenu;
             base.Initialize();
         }
 
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
         protected override void LoadContent() {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
             sphere = new BasicModel(Content.Load<Model>(@"models\sfera2"), "sphere");
             playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
+
+            intro_ball = Content.Load<Texture2D>(@"intro_ball");
+            dubstep_intro = Content.Load<Song>(@"intro");
+           // dubstep_intro;
+            MediaPlayer.Play(dubstep_intro);
+            //MediaPlayer.
             // Initialize vertices
 
             // Initialize the BasicEffect
@@ -70,19 +104,10 @@ namespace Pong3Da {
             // TODO: use this.Content to load your game content here
         }
 
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
-        /// </summary>
         protected override void UnloadContent() {
             // TODO: Unload any non ContentManager content here
         }
 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
             Window.Title = " x = " + ball.position.X
                 + " y = " + ball.position.Y
@@ -109,26 +134,72 @@ namespace Pong3Da {
                 ball.ChangeDirectionAtRandom();
             }
 
-            // TODO: Add your update logic here
-
+            // UNDER CONSTRUCTION
+            if (gs == GameState.MainMenu) HandleMainMenuInput();
+            if (gs == GameState.InGameDuringRound) HandleInGameDuringRound();
             base.Update(gameTime);
         }
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime) {
+
+        protected void HandleMainMenuInput()
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.Q))
+            {
+                gs = GameState.InGameDuringRound;
+
+                for (int i = 0; ; i++ )
+                {
+                    MediaPlayer.Volume -= 0.0001f;
+                    if (MediaPlayer.Volume <= 0) break;
+                }
+                MediaPlayer.Stop();
+            }
+           
+            if (y <= GraphicsDevice.Viewport.Bounds.Top || y >= GraphicsDevice.Viewport.Bounds.Bottom - intro_ball.Height)
+            {
+                speed.Y *= -1;
+            }
+            if (x <= GraphicsDevice.Viewport.Bounds.Left || x >= GraphicsDevice.Viewport.Bounds.Right - intro_ball.Width)
+            {
+               speed.X *= -1;
+            }
+            x += (int)speed.X;
+            y += (int)speed.Y;
+           
+
+        }
+
+        protected void HandleInGameDuringRound()
+        {
+
+        }
+
+        protected void DrawMainMenu()
+        {
+          
             GraphicsDevice.Clear(Color.Black);
+            spriteBatch.Begin();
+            spriteBatch.Draw(intro_ball, new Vector2(x, y), Color.Gainsboro);
+            spriteBatch.End();
+        }
+        protected void DrawSettingsMenu()
+        { 
             
+        }
+        protected void DrawGameArena()
+        {
             ball.Draw(camera);
             //GraphicsDevice.BlendState = BlendState.Opaque;
-            
-            // TODO: Add your drawing code here
-            
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             player1.Draw(camera);
             sphere.Draw(camera);
             GraphicsDevice.BlendState = BlendState.Opaque;
+        }
+        protected override void Draw(GameTime gameTime) {
+            GraphicsDevice.Clear(Color.Black);
+
+            if(gs == GameState.MainMenu) DrawMainMenu();
+            if(gs == GameState.InGameDuringRound) DrawGameArena();
+            if (gs == GameState.SettingsMenu) DrawSettingsMenu();
             base.Draw(gameTime);
         }
     }
