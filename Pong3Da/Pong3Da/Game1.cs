@@ -9,11 +9,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
-namespace Pong3Da {
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
-    /// 
+namespace Pong3Da
+{
+    #region Enums
     public enum GameState
     { 
         MainMenu,
@@ -24,12 +22,15 @@ namespace Pong3Da {
         GameOver
     }
 
-    public enum MultiType
+    public enum GameType
     { 
         Split,
         TcpIP
     }
-    public class Game1 : Microsoft.Xna.Framework.Game {
+    #endregion
+    public class Game1 : Microsoft.Xna.Framework.Game
+    {
+        #region Fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public Camera camera { get; protected set; }
@@ -40,11 +41,18 @@ namespace Pong3Da {
         bool baal;
         //-------------------NIE RUSZAĆ------------------------
         GameState gs = new GameState();
+        GameType gt = new GameType();
         Song dubstep_intro;
         int x, y;
         Texture2D intro_ball;
         Vector2 speed;
-        //----------------------------------------------------
+        Viewport mainViewport;
+        Viewport leftViewport;
+        Viewport rightViewport;
+        float aspectRatio;
+        #endregion
+
+        #region Constructor
         public Game1() {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -52,14 +60,11 @@ namespace Pong3Da {
             this.graphics.IsFullScreen = true;
             this.graphics.PreferredBackBufferWidth = 1920;
             this.graphics.PreferredBackBufferHeight = 1080;
+            aspectRatio = (float)GraphicsDeviceManager.DefaultBackBufferWidth /  (2 * GraphicsDeviceManager.DefaultBackBufferHeight);
         }
+        #endregion
 
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
+        #region Initialization
         protected override void Initialize() {
             // TODO: Add your initialization logic here
             camera = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up);
@@ -71,32 +76,35 @@ namespace Pong3Da {
             y = rnd.Next(100, 1000);
             speed = new Vector2(rnd.Next(-10,10), rnd.Next(-10,10));
             //player2 = new Player(this, camera);
-
             Components.Add(camera);
             Components.Add(ball);
-
-           
-            
-
             gs = GameState.MainMenu;
+            gt = GameType.Split;
             base.Initialize();
         }
+        #endregion
 
+        #region Content
         protected override void LoadContent() {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             sphere = new BasicModel(Content.Load<Model>(@"models\sfera2"), "sphere");
             playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
-
             intro_ball = Content.Load<Texture2D>(@"intro_ball");
             dubstep_intro = Content.Load<Song>(@"intro");
            // dubstep_intro;
             MediaPlayer.Play(dubstep_intro);
+
+            mainViewport = GraphicsDevice.Viewport;
+            leftViewport = mainViewport;
+            rightViewport = mainViewport;
+            leftViewport.Width  /= 2;
+            rightViewport.Width /= 2;
+            rightViewport.X = leftViewport.Width ;
+
             //MediaPlayer.
             // Initialize vertices
-
             // Initialize the BasicEffect
             //effect = new BasicEffect(GraphicsDevice);
-
             // Set cullmode to none
             //RasterizerState rs = new RasterizerState();
             //rs.CullMode = CullMode.None;
@@ -107,7 +115,9 @@ namespace Pong3Da {
         protected override void UnloadContent() {
             // TODO: Unload any non ContentManager content here
         }
+        #endregion
 
+        #region Logic
         protected override void Update(GameTime gameTime) {
             Window.Title = " x = " + ball.position.X
                 + " y = " + ball.position.Y
@@ -115,8 +125,8 @@ namespace Pong3Da {
                 + " pitch = " + camera.pitch
                 + " maxPitch = " + camera.maxPitch
                 + " P1 pts = " + player1.pts;
-            // Allows the game to exit
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();
+            
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();        // Allows the game to exit
             if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
                 ball.freeze = !ball.freeze;
             }
@@ -164,18 +174,17 @@ namespace Pong3Da {
             }
             x += (int)speed.X;
             y += (int)speed.Y;
-           
-
         }
 
         protected void HandleInGameDuringRound()
         {
 
         }
+        #endregion
 
+        #region Drawing
         protected void DrawMainMenu()
         {
-          
             GraphicsDevice.Clear(Color.Black);
             spriteBatch.Begin();
             spriteBatch.Draw(intro_ball, new Vector2(x, y), Color.Gainsboro);
@@ -185,6 +194,7 @@ namespace Pong3Da {
         { 
             
         }
+
         protected void DrawGameArena()
         {
             ball.Draw(camera);
@@ -194,13 +204,42 @@ namespace Pong3Da {
             sphere.Draw(camera);
             GraphicsDevice.BlendState = BlendState.Opaque;
         }
+
+        protected void DrawSplitScreenArena(Viewport left_view, Viewport right_view)
+        {
+            //prawy do lewego!!
+            graphics.GraphicsDevice.Viewport = left_view;
+            ball.Draw(camera);
+            //GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            player1.Draw(camera);
+            sphere.Draw(camera);
+            GraphicsDevice.BlendState = BlendState.Opaque;
+
+            graphics.GraphicsDevice.Viewport = right_view;
+            ball.Draw(camera);
+            //GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            player1.Draw(camera);
+            sphere.Draw(camera);
+            GraphicsDevice.BlendState = BlendState.Opaque;
+
+        }
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.Black);
 
-            if(gs == GameState.MainMenu) DrawMainMenu();
-            if(gs == GameState.InGameDuringRound) DrawGameArena();
+            if (gs == GameState.MainMenu) DrawMainMenu();
+
+            if (gt == GameType.Split && gs == GameState.InGameDuringRound)
+            {
+                DrawSplitScreenArena(leftViewport, rightViewport);
+            }
+            
+           
+            //if(gs == GameState.InGameDuringRound) DrawGameArena();
             if (gs == GameState.SettingsMenu) DrawSettingsMenu();
             base.Draw(gameTime);
         }
+        #endregion
     }
 }
