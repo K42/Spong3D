@@ -94,12 +94,17 @@ namespace Pong3Da
            // dubstep_intro;
             MediaPlayer.Play(dubstep_intro);
 
+           
             mainViewport = GraphicsDevice.Viewport;
             leftViewport = mainViewport;
             rightViewport = mainViewport;
             leftViewport.Width  /= 2;
             rightViewport.Width /= 2;
             rightViewport.X = leftViewport.Width ;
+            leftViewport.Height = rightViewport.Height /= 2;
+            leftViewport.Y = rightViewport.Y += 200;
+
+
 
             //MediaPlayer.
             // Initialize vertices
