@@ -33,9 +33,10 @@ namespace Pong3Da
         #region Fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        public Camera camera { get; protected set; }
+        public Camera camera1 { get; protected set; }
+        public Camera camera2 { get; protected set; }
         private Ball ball;
-        private Player player1;//, player2;
+        private Player player1, player2;
         BasicModel sphere;
         BoundingSphere playDome;
         bool baal;
@@ -67,16 +68,20 @@ namespace Pong3Da
         #region Initialization
         protected override void Initialize() {
             // TODO: Add your initialization logic here
-            camera = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up);
-            
+            camera1 = new Camera(this, new Vector3(0, 0, 60), Vector3.Zero, Vector3.Up, 1);
+            camera2 = new Camera(this, new Vector3(0, 0, -60), Vector3.Zero, Vector3.Up, 2);
+
             ball = new Ball(this);
-            player1 = new Player(this, camera);
+            player1 = new Player(this, camera1, 1);
+            player2 = new Player(this, camera2, 2);
+            
             Random rnd = new Random();
             x = rnd.Next(100,   1000);
             y = rnd.Next(100, 1000);
             speed = new Vector2(rnd.Next(-10,10), rnd.Next(-10,10));
-            //player2 = new Player(this, camera);
-            Components.Add(camera);
+            
+            Components.Add(camera1);
+            Components.Add(camera2);
             Components.Add(ball);
             gs = GameState.MainMenu;
             gt = GameType.Split;
@@ -127,8 +132,8 @@ namespace Pong3Da
             Window.Title = " x = " + ball.position.X
                 + " y = " + ball.position.Y
                 + " z = " + ball.position.Z
-                + " pitch = " + camera.pitch
-                + " maxPitch = " + camera.maxPitch
+                + " pitch = " + camera1.pitch
+                + " maxPitch = " + camera1.maxPitch
                 + " P1 pts = " + player1.pts;
             
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) this.Exit();        // Allows the game to exit
@@ -202,11 +207,11 @@ namespace Pong3Da
 
         protected void DrawGameArena()
         {
-            ball.Draw(camera);
+            ball.Draw(camera1);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            player1.Draw(camera);
-            sphere.Draw(camera);
+            player1.Draw(camera1);
+            sphere.Draw(camera1);
             GraphicsDevice.BlendState = BlendState.Opaque;
         }
 
@@ -214,19 +219,19 @@ namespace Pong3Da
         {
             //prawy do lewego!!
             graphics.GraphicsDevice.Viewport = left_view;
-            ball.Draw(camera);
+            ball.Draw(camera1);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            player1.Draw(camera);
-            sphere.Draw(camera);
+            player1.Draw(camera1);
+            sphere.Draw(camera1);
             GraphicsDevice.BlendState = BlendState.Opaque;
 
             graphics.GraphicsDevice.Viewport = right_view;
-            ball.Draw(camera);
+            ball.Draw(camera2);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            player1.Draw(camera);
-            sphere.Draw(camera);
+            player1.Draw(camera2);
+            sphere.Draw(camera2);
             GraphicsDevice.BlendState = BlendState.Opaque;
 
         }

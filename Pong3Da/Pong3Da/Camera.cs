@@ -17,7 +17,7 @@ namespace Pong3Da {
     public class Camera : Microsoft.Xna.Framework.GameComponent {
         public Matrix view { get; protected set; }
         public Matrix projection { get; protected set; }
-
+        int p; //tymczasowo, przeniesc do playera razem z inputem
         public Vector3 cameraPosition { get; protected set; }
         // max odchylenie góra-dó³, mo¿na pomin¹æ, bo dzia³a w miare normalnie 
         // ale jak siê mija bieguny to siê kierunki pierdol¹, wiêc lepiej niech jest
@@ -32,14 +32,15 @@ namespace Pong3Da {
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
 
-        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
+        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p)
             : base(game) {
+                this.p = p;
             position = pos;
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
 
-            offsetDistance = new Vector3(0, 0, 65);
+            offsetDistance = new Vector3(0, 0, 75);
 
             yaw = 0.0f;
             pitch = 0.0f;
@@ -54,13 +55,13 @@ namespace Pong3Da {
 
             CreateLookAt();
         }
-        private void reset() {
+        public void reset() {
             position = new Vector3(0, 0, 60);
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
 
-            offsetDistance = new Vector3(0, 0, 65);
+            offsetDistance = new Vector3(0, 0, 75);
 
             yaw = 0.0f;
             pitch = 0.0f;
@@ -88,7 +89,7 @@ namespace Pong3Da {
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime) {
-            if (Keyboard.GetState().IsKeyDown(Keys.R)) reset();
+            
             KeyboardState keyboardState = Keyboard.GetState();
 
             //obrót kamery
@@ -96,17 +97,43 @@ namespace Pong3Da {
 
             //if (keyboardState.IsKeyDown(Keys.P)) test++;
             float speed = .02f;
-            if (keyboardState.IsKeyDown(Keys.D)) {
-                yaw += speed;
+            if (p == 1)
+            {
+                if (keyboardState.IsKeyDown(Keys.D))
+                {
+                    yaw += speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.A))
+                {
+                    yaw += -speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch)
+                {
+                    pitch += -speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch)
+                {
+                    pitch += speed;
+                }
             }
-            if (keyboardState.IsKeyDown(Keys.A)) {
-                yaw += -speed;
-            }
-            if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch) {
-                pitch += -speed;
-            }
-            if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch) {
-                pitch += speed;
+            else if (p == 2)
+            {
+                if (keyboardState.IsKeyDown(Keys.L))
+                {
+                    yaw += speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.J))
+                {
+                    yaw += -speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.I) && pitch > -maxPitch)
+                {
+                    pitch += -speed;
+                }
+                if (keyboardState.IsKeyDown(Keys.K) && pitch < maxPitch)
+                {
+                    pitch += speed;
+                }
             }
             // Recreate the camera view matrix
             UpdateView();

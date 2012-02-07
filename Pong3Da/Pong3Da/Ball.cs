@@ -14,6 +14,7 @@ namespace Pong3Da {
 
         public Vector3 ballSpeed;
         public Vector3 position;
+        public Vector3 prevPosition;
         public Vector3 direction;
 
         public bool freeze { get; set; }
@@ -23,6 +24,7 @@ namespace Pong3Da {
         public Ball(Game game)
             : base(game) {
             position = Vector3.Zero;
+            prevPosition = position;
             freeze = true;
             ballSpeed = Vector3.One * 0.5f;
             direction = new Vector3((float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5));
@@ -48,6 +50,7 @@ namespace Pong3Da {
         public override void Update(GameTime gameTime) {
             //// TODO: Add your update code here
             if (!freeze) {
+                prevPosition = position;
                 position += ballSpeed * direction;
             }
             base.Update(gameTime);
@@ -58,6 +61,16 @@ namespace Pong3Da {
             direction = Vector3.Transform(direction,
                 Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
             direction.Normalize();
+        }
+        public void reset()
+        {
+            position = Vector3.Zero;
+            freeze = true;
+            ChangeDirectionAtRandom();
+        }
+        public void reflect(float hit)
+        {
+            //bleh
         }
 
         //rysowanie pilki

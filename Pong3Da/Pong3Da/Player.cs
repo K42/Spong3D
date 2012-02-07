@@ -19,6 +19,7 @@ namespace Pong3Da
     
     public class Player : Microsoft.Xna.Framework.GameComponent
     {
+        public int nr { get; protected set; }
         public String nickname { get; protected set; }
         public int pts = 0;
         public int colour;
@@ -26,14 +27,14 @@ namespace Pong3Da
         public float speed { get; protected set; }
         private Model model;
         private float[] dim = new float[5];
-        //public BoundingBox bb;// { get; protected set; }
 
         protected Matrix world = Matrix.Identity;
 
         //o huj tu chodzi?
-        public Player(Game game, Camera camera)
+        public Player(Game game, Camera camera, int n)
             : base(game)
         {
+            this.nr = n;
             position = new Vector3(0, 0, 50); //camera.position;
             speed = 0.5f;
             model = Game.Content.Load<Model>(@"models\plate3");
@@ -84,7 +85,7 @@ namespace Pong3Da
                         Matrix.CreateRotationX(camera.getDim()[3]) *
                         Matrix.CreateRotationX(MathHelper.ToRadians(90)) * 
                         Matrix.CreateRotationY(camera.getDim()[4]) *
-                        Matrix.CreateScale(3.0f) *
+                        Matrix.CreateScale(4.0f) *
                         Matrix.CreateTranslation(position);
                 }
                 mesh.Draw();

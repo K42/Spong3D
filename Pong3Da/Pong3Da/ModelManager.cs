@@ -49,7 +49,7 @@ namespace Pong3Da
             // Loop through and draw each model
             foreach (BasicModel bm in models)
             {
-                bm.Draw(((Game1)Game).camera);
+                bm.Draw(((Game1)Game).camera1);
             }
             base.Draw(gameTime);
         }
