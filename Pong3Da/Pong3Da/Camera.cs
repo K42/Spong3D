@@ -31,8 +31,9 @@ namespace Pong3Da {
         private Vector3 desiredTarget;
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
+        private float perspective = MathHelper.PiOver2 * 0.9f;
 
-        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p)
+        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
             : base(game) {
                 this.p = p;
             position = pos;
@@ -40,7 +41,7 @@ namespace Pong3Da {
             target = new Vector3();
             desiredTarget = target;
 
-            offsetDistance = new Vector3(0, 0, 75);
+            offsetDistance = new Vector3(0, 0, 90);
 
             yaw = 0.0f;
             pitch = 0.0f;
@@ -48,20 +49,22 @@ namespace Pong3Da {
             cameraRotation = Matrix.Identity;
 
             projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver2 * 0.9f,
-                (float) Game.Window.ClientBounds.Width /
-                (float) Game.Window.ClientBounds.Height,
+                perspective,
+                (float) view.Width /
+                (float) view.Height,
+                //(float) Game.Window.ClientBounds.Width /
+                //(float) Game.Window.ClientBounds.Height,
                 1, 1000);
 
             CreateLookAt();
         }
         public void reset() {
-            position = new Vector3(0, 0, 60);
+            position = new Vector3(0, 0, 80);
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
 
-            offsetDistance = new Vector3(0, 0, 75);
+            offsetDistance = new Vector3(0, 0, 90);
 
             yaw = 0.0f;
             pitch = 0.0f;
@@ -69,7 +72,7 @@ namespace Pong3Da {
             cameraRotation = Matrix.Identity;
             view = Matrix.Identity;
             projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver2 * 0.9f,
+                perspective,
                 (float) Game.Window.ClientBounds.Width /
                 (float) Game.Window.ClientBounds.Height,
                 1, 1000);
@@ -93,8 +96,6 @@ namespace Pong3Da {
             KeyboardState keyboardState = Keyboard.GetState();
 
             //obrót kamery
-            //drugi input do zrobienia dla drugiego gracza
-
             //if (keyboardState.IsKeyDown(Keys.P)) test++;
             float speed = .02f;
             if (p == 1)
@@ -118,19 +119,19 @@ namespace Pong3Da {
             }
             else if (p == 2)
             {
-                if (keyboardState.IsKeyDown(Keys.L))
+                if (keyboardState.IsKeyDown(Keys.Right))
                 {
                     yaw += speed;
                 }
-                if (keyboardState.IsKeyDown(Keys.J))
+                if (keyboardState.IsKeyDown(Keys.Left))
                 {
                     yaw += -speed;
                 }
-                if (keyboardState.IsKeyDown(Keys.I) && pitch > -maxPitch)
+                if (keyboardState.IsKeyDown(Keys.Up) && pitch > -maxPitch)
                 {
                     pitch += -speed;
                 }
-                if (keyboardState.IsKeyDown(Keys.K) && pitch < maxPitch)
+                if (keyboardState.IsKeyDown(Keys.Down) && pitch < maxPitch)
                 {
                     pitch += speed;
                 }

@@ -91,7 +91,12 @@ namespace Pong3Da
                 mesh.Draw();
             }
         }
-
+        public Vector3 GetFaceVector()
+        {
+            Vector3 dir = (Vector3.Zero - position);
+            dir.Normalize();
+            return dir;
+        }
         public virtual Matrix GetWorld()
         {
             return world;

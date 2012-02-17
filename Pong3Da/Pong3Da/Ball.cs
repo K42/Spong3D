@@ -62,15 +62,26 @@ namespace Pong3Da {
                 Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
             direction.Normalize();
         }
+        public void negate()
+        {
+            direction = Vector3.Negate(direction);
+            direction.Normalize();
+        }
         public void reset()
         {
             position = Vector3.Zero;
             freeze = true;
             ChangeDirectionAtRandom();
         }
-        public void reflect(float hit)
+        public void reflect(float hit, Vector3 surface)
         {
-            //bleh
+            //direction = Vector3.Transform(direction,
+            //    Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(45) * hit,
+            //        MathHelper.ToRadians(45) * hit,
+            //        MathHelper.ToRadians(45) * hit));
+            hit *= 10;
+            direction = Vector3.Reflect(direction, surface) * Math.Abs(hit);
+            direction.Normalize();
         }
 
         //rysowanie pilki
