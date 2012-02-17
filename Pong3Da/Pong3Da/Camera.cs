@@ -98,6 +98,7 @@ namespace Pong3Da {
             //obrót kamery
             //if (keyboardState.IsKeyDown(Keys.P)) test++;
             float speed = .02f;
+
             if (p == 1)
             {
                 if (keyboardState.IsKeyDown(Keys.D))

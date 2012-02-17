@@ -33,6 +33,7 @@ namespace Pong3Da
         #region Fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont topFont;
         public Camera camera1 { get; protected set; }
         public Camera camera2 { get; protected set; }
         private Ball ball;
@@ -40,6 +41,7 @@ namespace Pong3Da
         BasicModel sphere;
         BoundingSphere playDome;
         bool baal;
+        bool freeze = true;
         //-------------------NIE RUSZAĆ------------------------
         GameState gs = new GameState();
         GameType gt = new GameType();
@@ -53,6 +55,7 @@ namespace Pong3Da
         Viewport mainViewport;
         Viewport leftViewport;
         Viewport rightViewport;
+        Viewport topBarViewport;
         float aspectRatio;
         #endregion
 
@@ -90,19 +93,26 @@ namespace Pong3Da
             menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), menuItems);
             Components.Add(menu);
             menu.Enabled = false;
+
+            topFont = Content.Load<SpriteFont>("TopFont");
                        
             mainViewport = GraphicsDevice.Viewport;
             leftViewport = mainViewport;
             rightViewport = mainViewport;
             leftViewport.Width  /= 2;
             rightViewport.Width /= 2;
-            rightViewport.X = leftViewport.Width ;
+            rightViewport.X = leftViewport.Width;
+            leftViewport.Height -= 100;
+            rightViewport.Height -= 100;
+            topBarViewport.Width = GraphicsDevice.Viewport.Width;
+            topBarViewport.Height = 100;
             //leftViewport.Height = rightViewport.Height /= 2;
-            //leftViewport.Y = rightViewport.Y += 200;
+            leftViewport.Y += 100;
+            rightViewport.Y += 100;
 
             Random rnd = new Random();
-            x = rnd.Next(100, mainViewport.Width - 100);
-            y = rnd.Next(100, mainViewport.Height - 100);
+            x = rnd.Next(100, mainViewport.Width - 300);
+            y = rnd.Next(100, mainViewport.Height - 300);
             speed = new Vector2(rnd.Next(-10, 10), rnd.Next(-10, 10));
 
 
@@ -123,7 +133,7 @@ namespace Pong3Da
             //effect = new BasicEffect(GraphicsDevice);
             // Set cullmode to none
             RasterizerState rs = new RasterizerState();
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.CullMode = CullMode.CullClockwiseFace;
             GraphicsDevice.RasterizerState = rs;
             // TODO: use this.Content to load your game content here
         }
@@ -135,17 +145,27 @@ namespace Pong3Da
 
         #region Logic
         protected override void Update(GameTime gameTime) {
-            Window.Title = " x = " + ball.position.X
-                + " y = " + ball.position.Y
-                + " z = " + ball.position.Z
-                + " pitch = " + camera1.pitch
-                + " maxPitch = " + camera1.maxPitch
-                + " P1 pts = " + player1.pts;
+            int p = 0;
+            if(turn < 0) p = 1;
+            else p = 2;
+            Window.Title = "P1 " + player1.pts +
+                " P2 " + player2.pts +
+                " turn: player " + p;
+                //" x = " + ball.position.X
+                //+ " y = " + ball.position.Y
+                //+ " z = " + ball.position.Z
+                //+ " pitch = " + camera1.pitch
+                //+ " maxPitch = " + camera1.maxPitch
+                //+ " P1 pts = " + player1.pts;
 
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) //this.Exit();        // Allows the game to exit
+            {
                 gs = GameState.MainMenu;
+                freeze = true;
+            }
             if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
                 ball.freeze = !ball.freeze;
+                freeze = false; //temp
             }
             baal = Keyboard.GetState().IsKeyDown(Keys.P);
             BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
@@ -153,7 +173,13 @@ namespace Pong3Da
                 //punkt!
             } else {
                 //ball.ChangeDirectionAtRandom();
-                ball.negate();
+                //ball.negate();
+                ball.reset();
+                if (turn < 0)
+                    player2.pts++;
+                else
+                    player1.pts++;
+                
             }
             float hit =0;
             
@@ -162,7 +188,7 @@ namespace Pong3Da
                     if ((Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) &&
                         (hit = Vector3.Distance(b.Center, player1.position)) < 12)
                     {
-                        player1.pts++;
+                        //player1.pts++;
                         //ball.ChangeDirectionAtRandom();
                         ball.reflect(hit, player1.GetFaceVector());
                         turn *= -1;
@@ -173,7 +199,7 @@ namespace Pong3Da
                     if ((Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) &&
                         (hit = Vector3.Distance(b.Center, player2.position)) < 12)
                     {
-                        player2.pts++;
+                        //player2.pts++;
                         //ball.ChangeDirectionAtRandom();
                         ball.reflect(hit, player2.GetFaceVector());
                         turn *= -1;
@@ -182,11 +208,18 @@ namespace Pong3Da
             }
 
             // UNDER CONSTRUCTION
-                if (gs == GameState.MainMenu) HandleMainMenuInput();
+                if (gs == GameState.MainMenu)
+                {
+                    HandleMainMenuInput();
+                    freeze = true;
+                    ball.freeze = true;
+                }
                 else
                 {
                     menu.Visible = false;
                     menu.Enabled = false;
+                    freeze = false;
+
                 }
             if (gs == GameState.InGameDuringRound) HandleInGameDuringRound();
             base.Update(gameTime);
@@ -227,6 +260,22 @@ namespace Pong3Da
         {
 
         }
+        protected void TopBar()
+        {
+            spriteBatch.Begin();
+            spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.X + 50, topBarViewport.Y + 10), Color.White);
+            if (ball.freeze)
+                spriteBatch.DrawString(topFont, "PRESS P TO START", new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
+            else
+            {
+                int p;
+                if (turn < 0) p = 1;
+                else p = 2;
+                spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
+            }
+            spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 50, topBarViewport.Y + 10), Color.White);
+            spriteBatch.End();
+        }
         #endregion
 
         #region Drawing
@@ -255,12 +304,15 @@ namespace Pong3Da
 
         protected void DrawSplitScreenArena(Viewport left_view, Viewport right_view)
         {
+            graphics.GraphicsDevice.Viewport = mainViewport;
+            TopBar();
             //prawy do lewego!!
             graphics.GraphicsDevice.Viewport = left_view;
             ball.Draw(camera1);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             player1.Draw(camera1);
+            player2.Draw(camera1);
             sphere.Draw(camera1);
             GraphicsDevice.BlendState = BlendState.Opaque;
 
@@ -285,11 +337,11 @@ namespace Pong3Da
             if (gt == GameType.Split && gs == GameState.InGameDuringRound)
             {
                 DrawSplitScreenArena(leftViewport, rightViewport);
-            }
-            
+            }            
            
             //if(gs == GameState.InGameDuringRound) DrawGameArena();
-            if (gs == GameState.SettingsMenu) DrawSettingsMenu();
+            if (gs == GameState.SettingsMenu) DrawSettingsMenu();           
+
             base.Draw(gameTime);
         }
         #endregion

@@ -117,11 +117,7 @@ namespace Pong3Da
                     tint = hilite;
                 else
                     tint = normal;
-                spriteBatch.DrawString(
-                    spriteFont,
-                    menuItems[i],
-                    location,
-                    tint);
+                spriteBatch.DrawString(spriteFont, menuItems[i], location, tint);
                 location.Y += spriteFont.LineSpacing + 5;
             }
             spriteBatch.End();
