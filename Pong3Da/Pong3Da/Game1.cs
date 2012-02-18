@@ -93,7 +93,6 @@ namespace Pong3Da
             intro_ball = Content.Load<Texture2D>(@"textures/intro_ball");
             logo = Content.Load<Texture2D>(@"textures/spong");
             arrow = Content.Load<Texture2D>(@"textures/arrow");
-            bg = Content.Load<Texture2D>(@"textures/sky");
             dubstep_intro = Content.Load<Song>(@"intro");            
            // dubstep_intro;
            // MediaPlayer.Play(dubstep_intro);
