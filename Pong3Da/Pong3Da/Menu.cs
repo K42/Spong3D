@@ -32,6 +32,8 @@ namespace Pong3Da
         private float width = 0f;
         private float height = 0f;
 
+        SoundEffect menu_switch;
+
         public int SelectedIndex
         {
             get { return selectedIndex; }
@@ -54,6 +56,7 @@ namespace Pong3Da
             this.spriteBatch = spriteBatch;
             this.spriteFont = spriteFont;
             this.menuItems = menuItems;
+            menu_switch = Game.Content.Load<SoundEffect>(@"sounds/menu_switch");
             MeasureMenu();
         }
 
@@ -91,12 +94,14 @@ namespace Pong3Da
 
             if (CheckKey(Keys.Down))
             {
+                menu_switch.Play();
                 selectedIndex++;
                 if (selectedIndex == menuItems.Length)
                     selectedIndex = 0;
             }
             if (CheckKey(Keys.Up))
             {
+                menu_switch.Play();
                 selectedIndex--;
                 if (selectedIndex < 0)
                     selectedIndex = menuItems.Length - 1;

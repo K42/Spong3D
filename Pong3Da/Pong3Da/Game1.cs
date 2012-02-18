@@ -34,6 +34,7 @@ namespace Pong3Da
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         SpriteFont topFont;
+        SoundEffect menu_go, game_p_1, game_p_2, game_hit, game_point;
         public Camera camera1 { get; protected set; }
         public Camera camera2 { get; protected set; }
         private Ball ball;
@@ -99,6 +100,13 @@ namespace Pong3Da
             menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), menuItems);
             Components.Add(menu);
             menu.Enabled = false;
+
+            
+            menu_go = Content.Load<SoundEffect>(@"sounds/menu_start");
+            game_p_1 = Content.Load<SoundEffect>(@"sounds/game_p_1");
+            game_p_2 = Content.Load<SoundEffect>(@"sounds/game_p_2");
+            game_hit = Content.Load<SoundEffect>(@"sounds/game_hit");
+            game_point = Content.Load<SoundEffect>(@"sounds/game_point");
 
             topFont = Content.Load<SpriteFont>("TopFont");
                        
@@ -171,6 +179,8 @@ namespace Pong3Da
             }
             if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
                 ball.freeze = !ball.freeze;
+                if (ball.freeze) game_p_1.Play();
+                else game_p_2.Play();
             }
             baal = Keyboard.GetState().IsKeyDown(Keys.P);
             BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
@@ -178,7 +188,8 @@ namespace Pong3Da
                 //punkt!
             } else {
                 //ball.ChangeDirectionAtRandom();
-                //ball.negate();                
+                //ball.negate(); 
+                game_point.Play();
                 if (turn < 0)
                 {
                     player2.pts++;
@@ -201,6 +212,7 @@ namespace Pong3Da
                         //ball.ChangeDirectionAtRandom();
                         ball.reflect(hit, player1.GetFaceVector());
                         turn *= -1;
+                        game_hit.Play();
                     }
                 }
                 else
@@ -212,6 +224,7 @@ namespace Pong3Da
                         //ball.ChangeDirectionAtRandom();
                         ball.reflect(hit, player2.GetFaceVector());
                         turn *= -1;
+                        game_hit.Play();
                     }
                 
             }
@@ -253,6 +266,7 @@ namespace Pong3Da
                     menu.SelectedIndex++;
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
             {
+                menu_go.Play();
                 if (menu.SelectedIndex == 0)
                     if (ingame)
                     {
