@@ -15,21 +15,22 @@ namespace Pong3Da
 {
     public class MenuComponent : Microsoft.Xna.Framework.DrawableGameComponent
     {
-        string[] menuItems;
-        int selectedIndex;
+        private string[] menuItems;
+        private int selectedIndex;
 
-        Color normal = Color.White;
-        Color hilite = Color.Yellow;
+        private Color normal = Color.White;
+        private Color hilite = Color.Yellow;
+        private Color inactive = Color.Gray;
 
-        KeyboardState keyboardState;
-        KeyboardState oldKeyboardState;
+        private KeyboardState keyboardState;
+        private KeyboardState oldKeyboardState;
 
-        SpriteBatch spriteBatch;
-        SpriteFont spriteFont;
+        private SpriteBatch spriteBatch;
+        private SpriteFont spriteFont;
 
-        Vector2 position;
-        float width = 0f;
-        float height = 0f;
+        private Vector2 position;
+        private float width = 0f;
+        private float height = 0f;
 
         public int SelectedIndex
         {

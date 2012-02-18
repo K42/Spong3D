@@ -20,28 +20,27 @@ namespace Pong3Da
     public class Player : Microsoft.Xna.Framework.GameComponent
     {
         public int nr { get; protected set; }
-        public String nickname { get; protected set; }
         public int pts = 0;
-        public int colour;
         public Vector3 position { get; protected set; }
-        public float speed { get; protected set; }
         private Model model;
         private float[] dim = new float[5];
 
         protected Matrix world = Matrix.Identity;
 
         //o huj tu chodzi?
-        public Player(Game game, Camera camera, int n)
+        public Player(Game game, int n)
             : base(game)
         {
             this.nr = n;
-            position = new Vector3(0, 0, 50); //camera.position;
-            speed = 0.5f;
-            model = Game.Content.Load<Model>(@"models\plate3");
+            position = new Vector3(0, 0, 55); //camera.position;
+            model = Game.Content.Load<Model>(@"models\plate");
             //bb = new BoundingBox();
             // TODO: Construct any child components here
         }
-
+        public void reset()
+        {
+            pts = 0;
+        }
         /// <summary>
         /// Allows the game component to perform any initialization it needs to before starting
         /// to run.  This is where it can query for any required services and load content.
@@ -52,7 +51,7 @@ namespace Pong3Da
 
             base.Initialize();
         }
-
+        
         /// <summary>
         /// Allows the game component to update itself.
         /// </summary>

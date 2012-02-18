@@ -73,14 +73,18 @@ namespace Pong3Da {
             freeze = true;
             ChangeDirectionAtRandom();
         }
+        public void reset(Vector3 direction)
+        {
+            position = Vector3.Zero;
+            freeze = true;
+            this.direction = direction;
+            negate();
+            direction.Normalize();
+        }
         public void reflect(float hit, Vector3 surface)
         {
-            //direction = Vector3.Transform(direction,
-            //    Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(45) * hit,
-            //        MathHelper.ToRadians(45) * hit,
-            //        MathHelper.ToRadians(45) * hit));
             hit *= 10;
-            direction = Vector3.Reflect(direction, surface) * Math.Abs(hit);
+            direction = Vector3.Reflect(direction, surface) * Math.Abs(hit);            
             direction.Normalize();
         }
 
@@ -94,7 +98,8 @@ namespace Pong3Da {
                     be.EnableDefaultLighting();
                     be.Projection = camera.projection;
                     be.View = camera.view;
-                    be.World = GetWorld() * mesh.ParentBone.Transform * Matrix.CreateTranslation(position);
+                    be.World = GetWorld() * mesh.ParentBone.Transform 
+                        * Matrix.CreateTranslation(position);
                 }
                 mesh.Draw();
             }

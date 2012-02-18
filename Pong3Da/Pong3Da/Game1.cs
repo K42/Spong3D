@@ -38,10 +38,10 @@ namespace Pong3Da
         public Camera camera2 { get; protected set; }
         private Ball ball;
         private Player player1, player2;
-        BasicModel sphere;
+        StaticModel sphere, aX, aY, aZ, SkyDome;
         BoundingSphere playDome;
         bool baal;
-        bool freeze = true;
+        bool ingame = false;
         //-------------------NIE RUSZAĆ------------------------
         GameState gs = new GameState();
         GameType gt = new GameType();
@@ -49,8 +49,8 @@ namespace Pong3Da
         Song dubstep_intro;
         int x, y;
         int turn = -1;
-        string[] menuItems = {"Start", "Settings", "Quit"};
-        Texture2D intro_ball;
+        string[] menuItems = {"Resume", "Start duel", "Quit"};
+        Texture2D intro_ball, logo, arrow, bg;
         Vector2 speed;
         Viewport mainViewport;
         Viewport leftViewport;
@@ -84,12 +84,19 @@ namespace Pong3Da
         #region Content
         protected override void LoadContent() {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            sphere = new BasicModel(Content.Load<Model>(@"models\sfera2"), "sphere");
+            sphere = new StaticModel(Content.Load<Model>(@"models\sfera2"), 0, 0, 0);
+            aX = new StaticModel(Content.Load<Model>(@"models\ring"), 0, 0, 0);
+            aY = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 0, 0);
+            aZ = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 90, 0);
+            SkyDome = new StaticModel(Content.Load<Model>(@"models\sfera2"));
             playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
-            intro_ball = Content.Load<Texture2D>(@"intro_ball");
+            intro_ball = Content.Load<Texture2D>(@"textures/intro_ball");
+            logo = Content.Load<Texture2D>(@"textures/spong");
+            arrow = Content.Load<Texture2D>(@"textures/arrow");
+            bg = Content.Load<Texture2D>(@"textures/sky");
             dubstep_intro = Content.Load<Song>(@"intro");            
            // dubstep_intro;
-            MediaPlayer.Play(dubstep_intro);
+           // MediaPlayer.Play(dubstep_intro);
             menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), menuItems);
             Components.Add(menu);
             menu.Enabled = false;
@@ -120,8 +127,8 @@ namespace Pong3Da
             camera2 = new Camera(this, new Vector3(0, 0, -80), Vector3.Zero, Vector3.Up, 2, rightViewport);
 
             ball = new Ball(this);
-            player1 = new Player(this, camera1, 1);
-            player2 = new Player(this, camera2, 2);
+            player1 = new Player(this, 1);
+            player2 = new Player(this, 2);
 
             Components.Add(camera1);
             Components.Add(camera2);
@@ -132,9 +139,9 @@ namespace Pong3Da
             // Initialize the BasicEffect
             //effect = new BasicEffect(GraphicsDevice);
             // Set cullmode to none
-            RasterizerState rs = new RasterizerState();
-            rs.CullMode = CullMode.CullClockwiseFace;
-            GraphicsDevice.RasterizerState = rs;
+            //RasterizerState rs = new RasterizerState();
+            //rs.CullMode = CullMode.None;
+            //GraphicsDevice.RasterizerState = rs;
             // TODO: use this.Content to load your game content here
         }
 
@@ -150,7 +157,8 @@ namespace Pong3Da
             else p = 2;
             Window.Title = "P1 " + player1.pts +
                 " P2 " + player2.pts +
-                " turn: player " + p;
+                " turn: player " + p +
+                " rad: " + playDome.Radius;
                 //" x = " + ball.position.X
                 //+ " y = " + ball.position.Y
                 //+ " z = " + ball.position.Z
@@ -161,11 +169,9 @@ namespace Pong3Da
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) //this.Exit();        // Allows the game to exit
             {
                 gs = GameState.MainMenu;
-                freeze = true;
             }
             if (!baal && Keyboard.GetState().IsKeyDown(Keys.P)) {
                 ball.freeze = !ball.freeze;
-                freeze = false; //temp
             }
             baal = Keyboard.GetState().IsKeyDown(Keys.P);
             BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
@@ -173,20 +179,24 @@ namespace Pong3Da
                 //punkt!
             } else {
                 //ball.ChangeDirectionAtRandom();
-                //ball.negate();
-                ball.reset();
+                //ball.negate();                
                 if (turn < 0)
+                {
                     player2.pts++;
+                    ball.reset(player1.GetFaceVector());
+                }
                 else
+                {
                     player1.pts++;
+                    ball.reset(player2.GetFaceVector());
+                }
                 
             }
-            float hit =0;
-            
+            float hit =0;            
                 if (turn < 0)
                 {
                     if ((Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) &&
-                        (hit = Vector3.Distance(b.Center, player1.position)) < 12)
+                        (hit = Vector3.Distance(b.Center, player1.position)) < 15)
                     {
                         //player1.pts++;
                         //ball.ChangeDirectionAtRandom();
@@ -197,7 +207,7 @@ namespace Pong3Da
                 else
                 {
                     if ((Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius) &&
-                        (hit = Vector3.Distance(b.Center, player2.position)) < 12)
+                        (hit = Vector3.Distance(b.Center, player2.position)) < 15)
                     {
                         //player2.pts++;
                         //ball.ChangeDirectionAtRandom();
@@ -211,28 +221,57 @@ namespace Pong3Da
                 if (gs == GameState.MainMenu)
                 {
                     HandleMainMenuInput();
-                    freeze = true;
                     ball.freeze = true;
                 }
                 else
                 {
                     menu.Visible = false;
                     menu.Enabled = false;
-                    freeze = false;
 
                 }
             if (gs == GameState.InGameDuringRound) HandleInGameDuringRound();
             base.Update(gameTime);
         }
-
+        protected void ResetGame()
+        {
+            if (ingame)
+            {
+                ball.reset();
+                player1.reset();
+                player2.reset();
+                turn = -1;
+                camera1.reset();
+                camera2.reset();
+            }
+        }
         protected void HandleMainMenuInput()
         {
+            if(!(MediaPlayer.State == MediaState.Playing)) MediaPlayer.Play(dubstep_intro);
             menu.Enabled = true;
             menu.Visible = true;
+            if (menu.SelectedIndex == 0)
+                if (!ingame)
+                    menu.SelectedIndex++;
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
             {
                 if (menu.SelectedIndex == 0)
+                    if (ingame)
+                    {
+                        gs = GameState.InGameDuringRound;
+
+                        for (int i = 0; ; i++)
+                        {
+                            MediaPlayer.Volume -= 0.0001f;
+                            if (MediaPlayer.Volume <= 0) break;
+                        }
+                        MediaPlayer.Stop();
+                    }
+                    else
+                        menu.SelectedIndex++;
+                if (menu.SelectedIndex == 1)
                 {
+                    ResetGame();
+                    ingame = true;
                     gs = GameState.InGameDuringRound;
 
                     for (int i = 0; ; i++)
@@ -282,7 +321,8 @@ namespace Pong3Da
         protected void DrawMainMenu()
         {
             GraphicsDevice.Clear(Color.Black);
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            spriteBatch.Draw(logo, new Vector2(mainViewport.Width/2 - 167, 10), Color.White);
             spriteBatch.Draw(intro_ball, new Vector2(x, y), Color.Gainsboro);
             spriteBatch.End();
         }
@@ -301,9 +341,56 @@ namespace Pong3Da
             //sphere.Draw(camera1);
             //GraphicsDevice.BlendState = BlendState.Opaque;
         }
+        protected void DrawArrow(int d)
+        {
+            float x = 30.0f;
+            float y = 30.0f;
+            float halfArrowSize = 47.0f;
+            float rotation = 0;
+            Vector2 pos;
+            int w = graphics.GraphicsDevice.Viewport.Width/2;
+            int h = graphics.GraphicsDevice.Viewport.Height/2;
+            switch (d)
+            {
+                case 1:
+                     pos = new Vector2(w - halfArrowSize, h + y - halfArrowSize);
+                     rotation = MathHelper.ToRadians(270);
+                     break;
+                case 2:
+                     pos = new Vector2(w + halfArrowSize, h - y + halfArrowSize);
+                     rotation = MathHelper.ToRadians(90);
+                     break;
+                case 3:
+                     pos = new Vector2(w - x, h + halfArrowSize);
+                     rotation = MathHelper.ToRadians(180);
+                     break;
+                case 4:
+                     pos = new Vector2(w + x, h - halfArrowSize);
+                     rotation = 0;
+                     break;
+                default:
+                     pos = Vector2.Zero;
+                     break;
+            }
+            spriteBatch.Begin();
 
+            if(d > 0) spriteBatch.Draw(arrow, pos, new Rectangle(0, 0, 94, 94), Color.Blue, rotation, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0);
+            spriteBatch.End();
+            
+        }
         protected void DrawSplitScreenArena(Viewport left_view, Viewport right_view)
         {
+            if (ball.freeze)
+            {
+                camera1.Enabled = false;
+                camera2.Enabled = false;
+            }
+            else
+            {
+                camera1.Enabled = true;
+                camera2.Enabled = true;
+            }
+
             graphics.GraphicsDevice.Viewport = mainViewport;
             TopBar();
             //prawy do lewego!!
@@ -312,17 +399,28 @@ namespace Pong3Da
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             player1.Draw(camera1);
-            player2.Draw(camera1);
+            //player2.Draw(camera1);
             sphere.Draw(camera1);
+            aX.Draw(camera1);
+            aY.Draw(camera1);
+            aZ.Draw(camera1);
+            SkyDome.Draw(camera1);
             GraphicsDevice.BlendState = BlendState.Opaque;
+            DrawArrow(camera1.getDirection());
 
             graphics.GraphicsDevice.Viewport = right_view;
             ball.Draw(camera2);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;            
             player2.Draw(camera2);
+            //player1.Draw(camera2);
             sphere.Draw(camera2);
+            aX.Draw(camera2);
+            aY.Draw(camera2);
+            aZ.Draw(camera2);
+            SkyDome.Draw(camera1);
             GraphicsDevice.BlendState = BlendState.Opaque;
+            DrawArrow(camera2.getDirection());
 
         }
         protected override void Draw(GameTime gameTime) {
