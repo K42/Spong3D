@@ -37,7 +37,7 @@ namespace Pong3Da {
         private float ar;
         private int k = 0;
         private TimeSpan timer = TimeSpan.FromSeconds(0);
-        protected int duration = 0;
+        protected int bonusDuration = 0;
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
             : base(game) {
@@ -58,16 +58,13 @@ namespace Pong3Da {
             projection = Matrix.CreatePerspectiveFieldOfView(
                 perspective,
                 ar,
-                //(float) Game.Window.ClientBounds.Width /
-                //(float) Game.Window.ClientBounds.Height,
                 1, 1000);
 
             CreateLookAt();
             reset();
         }
+        //reset pozycji
         public void reset() {
-            //int i = 1;
-            //if (p == 2) i = -1;
             position = new Vector3(0, 0, 80);
             desiredPosition = position;
             target = new Vector3();
@@ -103,14 +100,7 @@ namespace Pong3Da {
             
             KeyboardState keyboardState = Keyboard.GetState();
 
-            //obrót kamery
-            //if (keyboardState.IsKeyDown(Keys.P)) test++;
             float speed = .02f;
-            //if (pitch > 2 * maxPitch) pitch = -maxPitch;
-            //if (pitch < 2 * (-maxPitch)) pitch = maxPitch;
-            //int q;
-            //if ((pitch > maxPitch) || (pitch < -maxPitch)) q = -1;
-            //else q = 1;
             k = 0;
             if (p == 1)
             {
@@ -161,13 +151,15 @@ namespace Pong3Da {
             // Recreate the camera view matrix
             UpdateView();
             CreateLookAt();
-            if (duration > 0)
+
+            //sprawdzanie bonusa
+            if (bonusDuration > 0)
             {                
                 timer += gameTime.ElapsedGameTime;
-                if (timer.TotalSeconds > duration)
+                if (timer.TotalSeconds > bonusDuration)
                 {
                     speedup = basespeed;
-                    duration = 0;
+                    bonusDuration = 0;
                 }
             }
             else timer = TimeSpan.FromSeconds(0);
@@ -197,17 +189,16 @@ namespace Pong3Da {
             //view = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
             view = Matrix.CreateLookAt(position, target, cameraRotation.Up);
         }
-
+        //potrzebne przy wyswietlaniu paletki
         public float[] getDim()
         {
             return new float[] { position.X, position.Y, position.Z, pitch, yaw };
         }
+        //atywacja bonusa gracza
         public void PowerUp(int active, float value)
         {
-            this.duration = active;
+            this.bonusDuration = active;
             speedup = value;
         }
-        //zalaczanie powerupa tutaj, liczenmie czasu tutaj
-        //klasa powerup liczy dla siebie
     }
 }

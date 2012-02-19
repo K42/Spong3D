@@ -20,7 +20,7 @@ namespace Pong3Da {
 
         public bool freeze { get; set; }
         TimeSpan timer = TimeSpan.FromSeconds(0);
-        int duration = 0;
+        int bonusDuration = 0;
 
         Random r = new Random();
 
@@ -57,36 +57,41 @@ namespace Pong3Da {
                 prevPosition = position;
                 position += ballSpeed * direction;
             }
-            if (duration > 0)
+            //sprawdzanie bonusa
+            if (bonusDuration > 0)
             {
                 timer += gameTime.ElapsedGameTime;
-                if (timer.TotalSeconds > duration)
+                if (timer.TotalSeconds > bonusDuration)
                 {
                     ballSpeed = baseSpeed;
-                    duration = 0;
+                    bonusDuration = 0;
                 }
             }
             else timer = TimeSpan.FromSeconds(0);
             base.Update(gameTime);
         }
-
+        //losowe wyznaczanie kierunku
         public void ChangeDirectionAtRandom() {
             direction = Vector3.Negate(direction);
             direction = Vector3.Transform(direction,
                 Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
             direction.Normalize();
         }
+        //do testow
         public void negate()
         {
             direction = Vector3.Negate(direction);
             direction.Normalize();
         }
+        //reset pozycji pilki, losowy kierunek
         public void reset()
         {
             position = Vector3.Zero;
             freeze = true;
             ChangeDirectionAtRandom();
         }
+        //reset pozycji pilki, okreslony kierunek
+        //wywolywana po zdobyciu punktu
         public void reset(Vector3 direction)
         {
             position = Vector3.Zero;
@@ -95,6 +100,7 @@ namespace Pong3Da {
             negate();
             direction.Normalize();
         }
+        //odbicie
         public void reflect(float hit, Vector3 surface)
         {
             hit *= 10;
@@ -122,9 +128,11 @@ namespace Pong3Da {
         public virtual Matrix GetWorld() {
             return world;
         }
+
+        //aktywacja bonusu dla pilki
         public void PowerUp(int active, float value)
         {
-            this.duration = active;
+            this.bonusDuration = active;
             ballSpeed = Vector3.One * value;
             //else ballSpeed = baseSpeed;
         }

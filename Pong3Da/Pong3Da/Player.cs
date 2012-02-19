@@ -27,7 +27,6 @@ namespace Pong3Da
 
         protected Matrix world = Matrix.Identity;
 
-        //o huj tu chodzi?
         public Player(Game game, int n)
             : base(game)
         {
@@ -37,6 +36,7 @@ namespace Pong3Da
             //bb = new BoundingBox();
             // TODO: Construct any child components here
         }
+        //resetowanie punktow
         public void reset()
         {
             pts = 0;
@@ -62,6 +62,7 @@ namespace Pong3Da
             
             base.Update(gameTime);
         }
+        //rysowanie paletki
         public void Draw(Camera camera)
         {
             dim = camera.getDim();
@@ -90,6 +91,9 @@ namespace Pong3Da
                 mesh.Draw();
             }
         }
+        //zwraca wektor kierunkowy na paletke
+        //takie ulatwienie
+        //gdy ktos zdobedzie punkt, pilka automatycznie ustawia kierunek na paletke przegranego
         public Vector3 GetFaceVector()
         {
             Vector3 dir = (Vector3.Zero - position);

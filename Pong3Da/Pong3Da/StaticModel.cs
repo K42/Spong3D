@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+//klasa do wyswietlania statycznych modeli, sfer, osi, powerupow
 namespace Pong3Da
 {
     class StaticModel

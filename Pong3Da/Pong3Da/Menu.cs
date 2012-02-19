@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace Pong3Da
 {
+    //klasa automatycznego menu
     public class MenuComponent : Microsoft.Xna.Framework.DrawableGameComponent
     {
         private string[] menuItems;

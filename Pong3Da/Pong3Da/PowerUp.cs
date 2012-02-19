@@ -10,6 +10,8 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 /*
+ * klasa do generowania bonusów
+ * 
  * green - speed-up player
  * blue - slow-down the ball
  * red - slow-down opponent
@@ -21,6 +23,7 @@ namespace Pong3Da
     /// This is a game component that implements IUpdateable.
     /// </summary>
     /// 
+    // kolor bonusa
     public enum flavor 
         {  
             green,
@@ -41,9 +44,11 @@ namespace Pong3Da
         public float value;
         public int duration { get; protected set; }
 
+        //power up aktywny, tzn znajduje siê na planszy, odlicza czas do znikniecia
         public bool active { get; protected set; }
-        public bool applied { get; protected set; }
-        private int helper = 0;
+        //power up "zaaplikowany", staje sie nieaktywny, znika z planszy, odlicza czas do wylaczenia
+        public bool applied { get; protected set; } 
+
         private Random r = new Random();
 
         private TimeSpan timer = TimeSpan.FromSeconds(0);
@@ -67,9 +72,9 @@ namespace Pong3Da
             applied = false;
             // TODO: Construct any child components here
         }
+        //losuj kolor
         private bool RollFlavor()
         {
-            string s = "pu_green";
             f = flavor.green;
             duration = 10;
             value = 1.3f;
@@ -86,7 +91,7 @@ namespace Pong3Da
             if (k % 4 == 0)
             {
                 f = flavor.red;
-                duration = 5;
+                duration = 7;
                 value = 0.5f;
                 model = red;
                 return true;
@@ -101,6 +106,7 @@ namespace Pong3Da
             }
             return true;
         }
+        //losuj pozycje
         private void RollPosition()
         {
             Matrix rotation = Matrix.CreateRotationX(r.Next(1, 30)/10) * Matrix.CreateRotationY(r.Next(1, 30)/10);
@@ -116,6 +122,7 @@ namespace Pong3Da
 
             base.Initialize();
         }
+        //zwraca Color bonusa
         public Color GetFlavorColor()
         {
             if (f == flavor.green)
@@ -128,6 +135,7 @@ namespace Pong3Da
                 return Color.White;
             return Color.Black;
         }
+        //kolizje
         public bool Intersect(Vector3 coords, int rad)
         {
             if (active)
@@ -141,6 +149,7 @@ namespace Pong3Da
             else return false;
 
         }
+        //zwraca wartosc bonusa (do metody Camera.PowerUp() i Ball.PowerUp())
         public float ApplyPowerUp()
         {
             applied = true;
