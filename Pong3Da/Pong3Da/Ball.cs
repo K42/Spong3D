@@ -13,11 +13,14 @@ namespace Pong3Da {
         protected Matrix world = Matrix.Identity;
 
         public Vector3 ballSpeed;
+        public Vector3 baseSpeed;
         public Vector3 position;
         public Vector3 prevPosition;
         public Vector3 direction;
 
         public bool freeze { get; set; }
+        TimeSpan timer = TimeSpan.FromSeconds(0);
+        int duration = 0;
 
         Random r = new Random();
 
@@ -27,9 +30,10 @@ namespace Pong3Da {
             prevPosition = position;
             freeze = true;
             ballSpeed = Vector3.One * 0.5f;
+            baseSpeed = ballSpeed;
             direction = new Vector3((float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5), (float) (r.NextDouble() - 0.5));
             direction.Normalize();
-            model = Game.Content.Load<Model>(@"models\testbox");
+            model = Game.Content.Load<Model>(@"models\playbox");
             // TODO: Construct any child components here
         }
 
@@ -53,6 +57,16 @@ namespace Pong3Da {
                 prevPosition = position;
                 position += ballSpeed * direction;
             }
+            if (duration > 0)
+            {
+                timer += gameTime.ElapsedGameTime;
+                if (timer.TotalSeconds > duration)
+                {
+                    ballSpeed = baseSpeed;
+                    duration = 0;
+                }
+            }
+            else timer = TimeSpan.FromSeconds(0);
             base.Update(gameTime);
         }
 
@@ -98,7 +112,7 @@ namespace Pong3Da {
                     be.EnableDefaultLighting();
                     be.Projection = camera.projection;
                     be.View = camera.view;
-                    be.World = GetWorld() * mesh.ParentBone.Transform 
+                    be.World = GetWorld() * mesh.ParentBone.Transform
                         * Matrix.CreateTranslation(position);
                 }
                 mesh.Draw();
@@ -107,6 +121,12 @@ namespace Pong3Da {
 
         public virtual Matrix GetWorld() {
             return world;
+        }
+        public void PowerUp(int active, float value)
+        {
+            this.duration = active;
+            ballSpeed = Vector3.One * value;
+            //else ballSpeed = baseSpeed;
         }
     }
 }

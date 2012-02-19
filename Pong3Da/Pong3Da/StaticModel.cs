@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-//dziwna bezuzyteczna klasa.
 namespace Pong3Da
 {
     class StaticModel
@@ -13,7 +12,7 @@ namespace Pong3Da
         public String modelID { get; protected set; }
         public Model model { get; protected set; }
         protected Matrix world = Matrix.Identity;
-        private float rotationX = 0, rotationY = 0, rotationZ = 0;
+        private float rotationX = 0, rotationY = 0, rotationZ = 0, scale = 1, alpha = 0.20f;
 
         public StaticModel(Model m, float rX, float rY, float rZ)
         {
@@ -25,6 +24,12 @@ namespace Pong3Da
         public StaticModel(Model m)
         {
             this.model = m;
+        }
+        public StaticModel(Model m, float s, float a)
+        {
+            this.model = m;
+            this.alpha = a;
+            this.scale = s;
         }
 
         public virtual void Update()
@@ -40,14 +45,15 @@ namespace Pong3Da
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
-                    be.Alpha = 0.25f;
+                    be.Alpha = alpha;
                     be.EnableDefaultLighting();
                     be.Projection = camera.projection;
                     be.View = camera.view;
                     be.World = GetWorld() * mesh.ParentBone.Transform
                         * Matrix.CreateRotationX(rotationX)
                         * Matrix.CreateRotationY(rotationY)
-                        * Matrix.CreateRotationZ(rotationZ);
+                        * Matrix.CreateRotationZ(rotationZ)
+                        * Matrix.CreateScale(scale);
                 }
                 mesh.Draw();
             }

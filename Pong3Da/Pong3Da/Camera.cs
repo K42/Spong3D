@@ -32,9 +32,12 @@ namespace Pong3Da {
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
         public float speedup { get; set; }
+        private float basespeed;
         private float perspective = MathHelper.PiOver2 * 0.9f;
         private float ar;
         private int k = 0;
+        TimeSpan timer = TimeSpan.FromSeconds(0);
+        int duration= 0 ;
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
             : base(game) {
@@ -43,7 +46,8 @@ namespace Pong3Da {
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
-            speedup = 0.0f;
+            basespeed = 1.0f;
+            speedup = basespeed;
             offsetDistance = new Vector3(0, 0, 85);
 
             yaw = 0.0f;
@@ -61,9 +65,9 @@ namespace Pong3Da {
             CreateLookAt();
         }
         public void reset() {
-            int i = 1;
-            if (k == 2) i = -1;
-            position = new Vector3(0, 0, 80*i);
+            //int i = 1;
+            //if (p == 2) i = -1;
+            position = new Vector3(0, 0, 80);
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
@@ -111,22 +115,22 @@ namespace Pong3Da {
             {
                 if (keyboardState.IsKeyDown(Keys.D))
                 {
-                    yaw += speed + speedup;
+                    yaw += (speed * speedup);
                     k = 4;
                 }
                 if (keyboardState.IsKeyDown(Keys.A))
                 {
-                    yaw += -speed + speedup;
+                    yaw += -(speed * speedup);
                     k = 3;
                 }
                 if (keyboardState.IsKeyDown(Keys.W) && pitch > -maxPitch)
                 {
-                    pitch += -speed + speedup;
+                    pitch += -(speed * speedup);
                     k = 1;
                 }
                 if (keyboardState.IsKeyDown(Keys.S) && pitch < maxPitch)
                 {
-                    pitch += speed + speedup;
+                    pitch += (speed * speedup);
                     k = 2;
                 }
             }
@@ -134,29 +138,38 @@ namespace Pong3Da {
             {
                 if (keyboardState.IsKeyDown(Keys.Right))
                 {
-                    yaw += speed + speedup;
+                    yaw += (speed * speedup);
                     k = 4;
                 }
                 if (keyboardState.IsKeyDown(Keys.Left))
                 {
-                    yaw += -speed + speedup;
+                    yaw += -(speed * speedup);
                     k = 3;
                 }
                 if (keyboardState.IsKeyDown(Keys.Up) && pitch > -maxPitch)
                 {
-                    pitch += -speed + speedup;
+                    pitch += -(speed * speedup);
                     k = 1;
                 }
                 if (keyboardState.IsKeyDown(Keys.Down) && pitch < maxPitch)
                 {
-                    pitch += speed + speedup;
+                    pitch += (speed * speedup);
                     k = 2;
                 }
             }
             // Recreate the camera view matrix
             UpdateView();
             CreateLookAt();
-
+            if (duration > 0)
+            {                
+                timer += gameTime.ElapsedGameTime;
+                if (timer.TotalSeconds > duration)
+                {
+                    speedup = basespeed;
+                    duration = 0;
+                }
+            }
+            else timer = TimeSpan.FromSeconds(0);
             base.Update(gameTime);
         }
         public Camera getInstance()
@@ -188,5 +201,12 @@ namespace Pong3Da {
         {
             return new float[] { position.X, position.Y, position.Z, pitch, yaw };
         }
+        public void PowerUp(int active, float value)
+        {
+            this.duration = active;
+            speedup = value;
+        }
+        //zalaczanie powerupa tutaj, liczenmie czasu tutaj
+        //klasa powerup liczy dla siebie
     }
 }
