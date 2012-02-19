@@ -32,7 +32,7 @@ namespace Pong3Da {
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
         protected float speedup { get; set; }
-        private float basespeed;
+        private float baseSpeed;
         private float perspective = MathHelper.PiOver2 * 0.9f;
         private float ar;
         private int k = 0;
@@ -40,48 +40,58 @@ namespace Pong3Da {
         public bool affected { get; private set; }
         protected int bonusDuration = 0;
 
-        public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
+        public Camera(Game game, int p, Viewport view)
             : base(game) {
                 this.p = p;
-            position = pos;
-            desiredPosition = position;
-            target = new Vector3();
-            desiredTarget = target;
-            basespeed = 1.0f;
-            speedup = basespeed;
-            offsetDistance = new Vector3(0, 0, 85);
-            affected = false;
-            yaw = 0.0f;
-            pitch = 0.0f;
-
-            cameraRotation = Matrix.Identity;
+            baseSpeed = 1.0f;
+            speedup = baseSpeed;
             ar = (float)view.Width / (float)view.Height;
-            projection = Matrix.CreatePerspectiveFieldOfView(
-                perspective,
-                ar,
-                1, 1000);
-
-            CreateLookAt();
             reset();
+            UpdateView();
+            CreateLookAt();            
+        }
+        public void setSpeed(int s)
+        {
+            switch(s)
+            {
+                case 1:
+                    baseSpeed = 1.0f;
+                    break;
+                case 2:
+                    baseSpeed = 1.2f;
+                    break;
+                case 3:
+                    baseSpeed = 1.5f;
+                    break;
+            }
         }
         //reset pozycji
         public void reset() {
-            position = new Vector3(0, 0, 80);
+            
+
+            offsetDistance = new Vector3(0, 0, 85);
+            if (p == 1)
+            {
+                yaw = 0.0f;
+                pitch = 0.0f;
+                position = new Vector3(0, 0, 80);
+            }
+            if (p == 2)
+            {
+                yaw = 3.14f;
+                pitch = 0.0f;
+                position = new Vector3(0, 0, -80);
+            }
             desiredPosition = position;
             target = new Vector3();
             desiredTarget = target;
-
-            offsetDistance = new Vector3(0, 0, 85);
-
-            yaw = 0.0f;
-            pitch = 0.0f;
-
             cameraRotation = Matrix.Identity;
             view = Matrix.Identity;
             projection = Matrix.CreatePerspectiveFieldOfView(
                 perspective,
                 ar,
                 1, 1000);
+            UpdateView();
             CreateLookAt();
         }
         /// <summary>
@@ -110,7 +120,7 @@ namespace Pong3Da {
                 timer += gameTime.ElapsedGameTime;
                 if (timer.TotalSeconds > bonusDuration)
                 {
-                    speedup = basespeed;
+                    speedup = baseSpeed;
                     bonusDuration = 0;
                     affected = false;
                 }
@@ -122,7 +132,7 @@ namespace Pong3Da {
         {
             KeyboardState keyboardState = Keyboard.GetState();
 
-            float speed = .02f;
+            float speed = .02f * baseSpeed;
             k = 0;
             if (p == 1)
             {

@@ -31,7 +31,7 @@ namespace Pong3Da
             : base(game)
         {
             this.nr = n;
-            position = new Vector3(0, 0, 55); //camera.position;
+            position = new Vector3(0, 0, 51); //camera.position;
             model = Game.Content.Load<Model>(@"models\plate");
             //bb = new BoundingBox();
             // TODO: Construct any child components here
@@ -72,7 +72,7 @@ namespace Pong3Da
             plateRotation.Forward.Normalize();
             //position = camera.position;
             plateRotation = Matrix.CreateRotationX(camera.getDim()[3]) * Matrix.CreateRotationY(camera.getDim()[4]);
-            position = Vector3.Transform(new Vector3(0, 0, 55), plateRotation);
+            position = Vector3.Transform(new Vector3(0, 0, 51), plateRotation);
             foreach (ModelMesh mesh in model.Meshes)
             {
                 foreach (BasicEffect be in mesh.Effects)
@@ -85,6 +85,34 @@ namespace Pong3Da
                         Matrix.CreateRotationX(camera.getDim()[3]) *
                         Matrix.CreateRotationX(MathHelper.ToRadians(90)) * 
                         Matrix.CreateRotationY(camera.getDim()[4]) *
+                        Matrix.CreateScale(4.0f) *
+                        Matrix.CreateTranslation(position);
+                }
+                mesh.Draw();
+            }
+        }
+        public void Draw(Camera data, Camera viewer)
+        {
+            dim = data.getDim();
+            Matrix[] transforms = new Matrix[model.Bones.Count];
+            model.CopyAbsoluteBoneTransformsTo(transforms);
+            Matrix plateRotation = Matrix.Identity;
+            plateRotation.Forward.Normalize();
+            //position = camera.position;
+            plateRotation = Matrix.CreateRotationX(data.getDim()[3]) * Matrix.CreateRotationY(data.getDim()[4]);
+            position = Vector3.Transform(new Vector3(0, 0, 51), plateRotation);
+            foreach (ModelMesh mesh in model.Meshes)
+            {
+                foreach (BasicEffect be in mesh.Effects)
+                {
+                    be.Alpha = 0.25f;
+                    be.EnableDefaultLighting();
+                    be.Projection = viewer.projection;
+                    be.View = viewer.view;
+                    be.World = GetWorld() * mesh.ParentBone.Transform *
+                        Matrix.CreateRotationX(data.getDim()[3]) *
+                        Matrix.CreateRotationX(MathHelper.ToRadians(90)) *
+                        Matrix.CreateRotationY(data.getDim()[4]) *
                         Matrix.CreateScale(4.0f) *
                         Matrix.CreateTranslation(position);
                 }

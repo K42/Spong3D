@@ -138,14 +138,14 @@ namespace Pong3Da
         public string GetFlavorText(int player)
         {
             if (f == flavor.green)
-                return "PLAYER " + player + "SPEED UP!";
+                return "PLAYER " + player + " SPEED UP!";
             if (f == flavor.blue)
                 return "CRAWLER-BALL!";
             if (f == flavor.red)
             {
                 if (player == 1) player = 2;
                 if (player == 2) player = 1;
-                return "PLAYER " + player + "SLOOOOOW DOOOOWN";
+                return "PLAYER " + player + " SLOOOOOW DOOOOWN";
             }
             if (f == flavor.black)
                 return "BULLET TIME!";

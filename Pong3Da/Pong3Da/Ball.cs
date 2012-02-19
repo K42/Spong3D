@@ -53,6 +53,7 @@ namespace Pong3Da {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime) {
             //// TODO: Add your update code here
+            if (bonusDuration == 0) ballSpeed = baseSpeed;
             if (!freeze) {
                 prevPosition = position;
                 position += ballSpeed * direction;
@@ -70,13 +71,28 @@ namespace Pong3Da {
             else timer = TimeSpan.FromSeconds(0);
             base.Update(gameTime);
         }
-        //losowe wyznaczanie kierunku
-        public void ChangeDirectionAtRandom() {
-            direction = Vector3.Negate(direction);
-            direction = Vector3.Transform(direction,
-                Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
-            direction.Normalize();
+        public void setSpeed(int s)
+        {
+            switch (s)
+            {
+                case 1:
+                    baseSpeed = Vector3.One * 0.5f;
+                    break;
+                case 2:
+                    baseSpeed = Vector3.One * 0.8f;
+                    break;
+                case 3:
+                    baseSpeed = Vector3.One * 1.1f;
+                    break;
+            }
         }
+        //losowe wyznaczanie kierunku
+        //public void ChangeDirectionAtRandom() {
+        //    direction = Vector3.Negate(direction);
+        //    direction = Vector3.Transform(direction,
+        //        Matrix.CreateFromYawPitchRoll((float) r.NextDouble(), (float) r.NextDouble(), (float) r.NextDouble()));
+        //    direction.Normalize();
+        //}
         //do testow
         public void negate()
         {
@@ -84,12 +100,12 @@ namespace Pong3Da {
             direction.Normalize();
         }
         //reset pozycji pilki, losowy kierunek
-        public void reset()
-        {
-            position = Vector3.Zero;
-            freeze = true;
-            ChangeDirectionAtRandom();
-        }
+        //public void reset()
+        //{
+        //    position = Vector3.Zero;
+        //    freeze = true;
+        //    ChangeDirectionAtRandom();
+        //}
         //reset pozycji pilki, okreslony kierunek
         //wywolywana po zdobyciu punktu
         public void reset(Vector3 direction)
@@ -133,7 +149,7 @@ namespace Pong3Da {
         public void PowerUp(int active, float value)
         {
             this.bonusDuration = active;
-            ballSpeed = Vector3.One * value;
+            ballSpeed = Vector3.One * (baseSpeed * value);
             //else ballSpeed = baseSpeed;
         }
     }

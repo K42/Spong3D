@@ -66,12 +66,12 @@ namespace Pong3Da
         //inty pomocnicze
         int x, y;
         int turn = -1; //znacznik tury
-        int time = 60, points = 20, helper = 0;
+        int time = 60, points = 20, helper = 0, gspeed = 1;
         int winner;
         //tablica opcji w menu głównym
         string[] menuItems = { "Resume", "Start duel", "Settings", "Quit" };
         //tablica opcji w menu ekranu startowego
-        string[] duel_prop = { "Game type: ", "Time limit: ", "Points limit: ", "START!" };
+        string[] duel_prop = { "Game type: ", "Time limit: ", "Points limit: ", "Speed: ", "START!" };
         //tekstury do menu i strzalki
         Texture2D intro_ball, logo, arrow, bg1, bg2;
         Vector2 speed;
@@ -159,9 +159,9 @@ namespace Pong3Da
             speed = new Vector2(rnd.Next(-10, 10), rnd.Next(-10, 10));
 
 
-            camera1 = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 1, leftViewport);
-            camera2 = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 2, rightViewport);
-            menu_camera = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 2, mainViewport);
+            camera1 = new Camera(this, 1, leftViewport);
+            camera2 = new Camera(this, 2, rightViewport);
+            menu_camera = new Camera(this, 2, mainViewport);
 
             ball = new Ball(this);
             player1 = new Player(this, 1);
@@ -171,9 +171,15 @@ namespace Pong3Da
             Components.Add(camera2);
             Components.Add(ball);
             Window.Title = "Spong 3D";
+            setSpeed(1);
 
         }
-
+        protected void setSpeed(int k)
+        {
+            ball.setSpeed(k);
+            camera1.setSpeed(k);
+            camera2.setSpeed(k);
+        }
         protected override void UnloadContent() {
             // TODO: Unload any non ContentManager content here
         }
@@ -304,7 +310,10 @@ namespace Pong3Da
             if (ingame)
             {
                 winner = 0;
-                ball.reset();
+                if(turn < 0 )
+                    ball.reset(player1.GetFaceVector());
+                else
+                    ball.reset(player2.GetFaceVector());
                 player1.reset();
                 player2.reset();
                 turn = -1;
@@ -378,11 +387,14 @@ namespace Pong3Da
         protected void DuelPreparation()
         {
             string type = "";
+            string sSpeed = "";
             if (gt == GameType.Time) type = "time limit";
             else if (gt == GameType.Points) type = "points limit";
-
+            if (gspeed == 1) sSpeed = "Normal";
+            if (gspeed == 2) sSpeed = "Fast";
+            if (gspeed == 3) sSpeed = "Insane";
             if (t) helper++;
-            if (helper > 5)
+            if (helper > 7)
             {
                 helper = 0;
                 t = false;
@@ -405,7 +417,7 @@ namespace Pong3Da
                 if (Keyboard.GetState().IsKeyDown(Keys.Left) && duel_menu.Enabled && !t)
                 {
                     t = true;
-                    if (time > 10) time--;
+                    if (time > 11) time--;
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Right) && duel_menu.Enabled && !t)
                 {
@@ -418,7 +430,7 @@ namespace Pong3Da
                 if (Keyboard.GetState().IsKeyDown(Keys.Left) && duel_menu.Enabled && !t)
                 {
                     t = true;
-                    if (points > 0) points--;
+                    if (points > 1) points--;
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Right) && duel_menu.Enabled && !t)
                 {
@@ -426,15 +438,30 @@ namespace Pong3Da
                     points++;
                 }
             }
+            if (duel_menu.SelectedIndex == 3)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Left) && duel_menu.Enabled && !t)
+                {
+                    t = true;
+                    if (gspeed > 1) gspeed--;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Right) && duel_menu.Enabled && !t)
+                {
+                    t = true;
+                    if (gspeed < 3) gspeed++;
+                }
+            }
             duel_menu.SetIndexstring(0, "Game type: " + type);
             duel_menu.SetIndexstring(1, "Time limit: " + time);
             duel_menu.SetIndexstring(2, "Points limit: " + points);
+            duel_menu.SetIndexstring(3, "Speed: " + sSpeed);
             if (Keyboard.GetState().IsKeyDown(Keys.Enter) && duel_menu.Enabled)
             {
-                if (duel_menu.SelectedIndex == 3)
+                if (duel_menu.SelectedIndex == 4)
                 {
                     if (gt == GameType.Time) timer = TimeSpan.FromSeconds(0);
                     ingame = true;
+                    setSpeed(gspeed);
                     if (playSound) menu_go.Play();
                     for (int i = 0; ; i++)
                     {
@@ -563,7 +590,7 @@ namespace Pong3Da
                 int k = 0;
                 if (camera1.affected) k = 1;
                 else if (camera2.affected) k = 2;
-                spriteBatch.DrawString(topFont, powerUp.GetFlavorText(k), new Vector2(topBarViewport.Width - 200, topBarViewport.Y + 50), powerUp.GetFlavorColor());
+                spriteBatch.DrawString(topFont, powerUp.GetFlavorText(k), new Vector2(topBarViewport.Width - 300, topBarViewport.Y + 50), powerUp.GetFlavorColor());
             }
             if (gt == GameType.Time)
             {
@@ -583,13 +610,13 @@ namespace Pong3Da
                 {
                     if (t) if (playSound) game_win.Play();
                     t = false;
-                    spriteBatch.DrawString(topFont, "PLAYER " + winner + " WINS!",
-                        new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 30), Color.Yellow);
+                    spriteBatch.DrawString(topFont, "  PLAYER " + winner + " WINS!",
+                        new Vector2(topBarViewport.Width / 2 - 95, topBarViewport.Y + 30), Color.Yellow);
                 }
                 else
                 {
                     spriteBatch.DrawString(topFont, "REMIS!",
-                        new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 30), Color.Yellow);
+                        new Vector2(topBarViewport.Width / 2 - 90, topBarViewport.Y + 30), Color.Yellow);
                 }
                 spriteBatch.DrawString(topFont, "press ESC to exit",
                     new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
@@ -598,13 +625,11 @@ namespace Pong3Da
             {
                 if (ball.freeze)
                     spriteBatch.DrawString(topFont, "PRESS SPACE TO START", new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
-                else
-                {
-                    int p;
-                    if (turn < 0) p = 1;
-                    else p = 2;
-                    spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
-                }
+                
+                int p;
+                if (turn < 0) p = 1;
+                else p = 2;
+                spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 50, topBarViewport.Y + 30), Color.White);
             }
             
             spriteBatch.End();
@@ -670,8 +695,9 @@ namespace Pong3Da
             
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            
             player1.Draw(camera1);
-            //player2.Draw(camera1);
+            player2.Draw(camera2, camera1);
             sphere.Draw(camera1);
             aX.Draw(camera1);
             aY.Draw(camera1);
@@ -685,8 +711,10 @@ namespace Pong3Da
             ball.Draw(camera2);
             powerUp.Draw(camera2);
             //GraphicsDevice.BlendState = BlendState.Opaque;
-            GraphicsDevice.BlendState = BlendState.AlphaBlend;            
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+           
             player2.Draw(camera2);
+            player1.Draw(camera1, camera2);
             //player1.Draw(camera2);
             sphere.Draw(camera2);
             aX.Draw(camera2);
