@@ -37,6 +37,7 @@ namespace Pong3Da {
         private float ar;
         private int k = 0;
         private TimeSpan timer = TimeSpan.FromSeconds(0);
+        public bool affected { get; private set; }
         protected int bonusDuration = 0;
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
@@ -49,7 +50,7 @@ namespace Pong3Da {
             basespeed = 1.0f;
             speedup = basespeed;
             offsetDistance = new Vector3(0, 0, 85);
-
+            affected = false;
             yaw = 0.0f;
             pitch = 0.0f;
 
@@ -98,6 +99,27 @@ namespace Pong3Da {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime) {
             
+            // Recreate the camera view matrix
+            InputHandler();
+            UpdateView();
+            CreateLookAt();
+
+            //sprawdzanie bonusa
+            if (bonusDuration > 0)
+            {                
+                timer += gameTime.ElapsedGameTime;
+                if (timer.TotalSeconds > bonusDuration)
+                {
+                    speedup = basespeed;
+                    bonusDuration = 0;
+                    affected = false;
+                }
+            }
+            else timer = TimeSpan.FromSeconds(0);
+            base.Update(gameTime);
+        }
+        private void InputHandler()
+        {
             KeyboardState keyboardState = Keyboard.GetState();
 
             float speed = .02f;
@@ -148,22 +170,6 @@ namespace Pong3Da {
                     k = 2;
                 }
             }
-            // Recreate the camera view matrix
-            UpdateView();
-            CreateLookAt();
-
-            //sprawdzanie bonusa
-            if (bonusDuration > 0)
-            {                
-                timer += gameTime.ElapsedGameTime;
-                if (timer.TotalSeconds > bonusDuration)
-                {
-                    speedup = basespeed;
-                    bonusDuration = 0;
-                }
-            }
-            else timer = TimeSpan.FromSeconds(0);
-            base.Update(gameTime);
         }
         public Camera getInstance()
         {
@@ -198,6 +204,7 @@ namespace Pong3Da {
         public void PowerUp(int active, float value)
         {
             this.bonusDuration = active;
+            affected = true;
             speedup = value;
         }
     }

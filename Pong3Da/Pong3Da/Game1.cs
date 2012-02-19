@@ -43,12 +43,13 @@ namespace Pong3Da
         SpriteFont topFont;
         SoundEffect menu_go, game_p_1, game_p_2, game_hit, game_point, game_win;
 
+        protected Camera menu_camera;
         public Camera camera1 { get; protected set; }
         public Camera camera2 { get; protected set; }
         protected PowerUp powerUp;
         private Ball ball;
         private Player player1, player2;
-        StaticModel sphere, aX, aY, aZ;
+        StaticModel sphere, aX, aY, aZ, skydome, menudome;
         BoundingSphere playDome;
         //boole pomocnicze
         bool baal;
@@ -72,7 +73,7 @@ namespace Pong3Da
         //tablica opcji w menu ekranu startowego
         string[] duel_prop = { "Game type: ", "Time limit: ", "Points limit: ", "START!" };
         //tekstury do menu i strzalki
-        Texture2D intro_ball, logo, arrow;
+        Texture2D intro_ball, logo, arrow, bg1, bg2;
         Vector2 speed;
 
         Viewport mainViewport;
@@ -86,9 +87,9 @@ namespace Pong3Da
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             Window.AllowUserResizing = false;
-            this.graphics.IsFullScreen = false;
-            this.graphics.PreferredBackBufferWidth = (int)(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width * 0.75);
-            this.graphics.PreferredBackBufferHeight = (int)(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height * 0.75);
+            this.graphics.IsFullScreen = true;
+            this.graphics.PreferredBackBufferWidth = (int)(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width);
+            this.graphics.PreferredBackBufferHeight = (int)(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
             //aspectRatio = (float)GraphicsDeviceManager.DefaultBackBufferWidth /  (2 * GraphicsDeviceManager.DefaultBackBufferHeight);
         }
         #endregion
@@ -110,10 +111,14 @@ namespace Pong3Da
             aX = new StaticModel(Content.Load<Model>(@"models\ring"), 0, 0, 0);
             aY = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 0, 0);
             aZ = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 90, 0);
+            skydome = new StaticModel(Content.Load<Model>(@"models\skydome"), 2.0f, 1.0f, false);
+            menudome = new StaticModel(Content.Load<Model>(@"models\skydome"), 2.0f, 1.0f, true); 
             playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
             intro_ball = Content.Load<Texture2D>(@"textures/intro_ball");
             logo = Content.Load<Texture2D>(@"textures/spong");
             arrow = Content.Load<Texture2D>(@"textures/arrow");
+            bg1 = Content.Load<Texture2D>(@"textures/bg1");
+            bg2 = Content.Load<Texture2D>(@"textures/bg2");
             dubstep_intro = Content.Load<Song>(@"intro");
             powerUp = new PowerUp(this);
             menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), menuItems);
@@ -156,6 +161,7 @@ namespace Pong3Da
 
             camera1 = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 1, leftViewport);
             camera2 = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 2, rightViewport);
+            menu_camera = new Camera(this, new Vector3(0, 0, 80), Vector3.Zero, Vector3.Up, 2, mainViewport);
 
             ball = new Ball(this);
             player1 = new Player(this, 1);
@@ -532,22 +538,32 @@ namespace Pong3Da
         #region Drawing
         //rysowanie dodatkow menu glownego
         protected void DrawMainMenu()
-        {
+        {           
             GraphicsDevice.Clear(Color.Black);
+            menudome.Update();
+            menudome.Draw(menu_camera);
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             spriteBatch.Draw(logo, new Vector2(mainViewport.Width/2 - 167, 10), Color.White);
             spriteBatch.Draw(intro_ball, new Vector2(x, y), Color.Gainsboro);
             spriteBatch.End();
         }
+        protected void DrawDuelPreparation()
+        {
+            menudome.Update();
+            menudome.Draw(menu_camera);
+        }
         //gorny panel podczas rozgrywki
         protected void TopBar()
         {
             spriteBatch.Begin();
-            spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.X + 50, topBarViewport.Y + 10), Color.White);
+            spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.Width / 2 - 200, topBarViewport.Y + 10), Color.White);
             spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 100, topBarViewport.Y + 10), Color.White);
             if (powerUp.applied)
             {
-                spriteBatch.DrawString(topFont, "POWER UP! ", new Vector2(topBarViewport.Width - 100, topBarViewport.Y + 50), powerUp.GetFlavorColor());
+                int k = 0;
+                if (camera1.affected) k = 1;
+                else if (camera2.affected) k = 2;
+                spriteBatch.DrawString(topFont, powerUp.GetFlavorText(k), new Vector2(topBarViewport.Width - 200, topBarViewport.Y + 50), powerUp.GetFlavorColor());
             }
             if (gt == GameType.Time)
             {
@@ -648,8 +664,10 @@ namespace Pong3Da
             TopBar();
             //prawy do lewego!!
             graphics.GraphicsDevice.Viewport = left_view;
+            skydome.Draw(camera1);
             ball.Draw(camera1);
             powerUp.Draw(camera1);
+            
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             player1.Draw(camera1);
@@ -662,6 +680,8 @@ namespace Pong3Da
             DrawArrow(camera1.getDirection());
 
             graphics.GraphicsDevice.Viewport = right_view;
+
+            skydome.Draw(camera2);
             ball.Draw(camera2);
             powerUp.Draw(camera2);
             //GraphicsDevice.BlendState = BlendState.Opaque;
@@ -683,7 +703,8 @@ namespace Pong3Da
                 graphics.GraphicsDevice.Viewport = mainViewport;
                 DrawMainMenu();
             }
-
+            if (gs == GameState.SuitUp)
+                DrawDuelPreparation();
             if (gs == GameState.InGameDuringRound)
             {
                 DrawSplitScreenArena(leftViewport, rightViewport);

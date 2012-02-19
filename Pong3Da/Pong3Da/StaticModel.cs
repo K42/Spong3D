@@ -14,6 +14,7 @@ namespace Pong3Da
         public Model model { get; protected set; }
         protected Matrix world = Matrix.Identity;
         private float rotationX = 0, rotationY = 0, rotationZ = 0, scale = 1, alpha = 0.20f;
+        bool spin = false;
 
         public StaticModel(Model m, float rX, float rY, float rZ)
         {
@@ -26,15 +27,17 @@ namespace Pong3Da
         {
             this.model = m;
         }
-        public StaticModel(Model m, float s, float a)
+        public StaticModel(Model m, float s, float a, bool r)
         {
             this.model = m;
             this.alpha = a;
             this.scale = s;
+            this.spin = r;
         }
 
         public virtual void Update()
         {
+            if (spin) rotationY += 0.01f;
         }
 
         public void Draw(Camera camera)
