@@ -18,26 +18,26 @@ namespace Pong3Da {
         public Matrix view { get; protected set; }
         public Matrix projection { get; protected set; }
         int p; //tymczasowo, przeniesc do playera razem z inputem
-        public Vector3 cameraPosition { get; protected set; }
+        //public Vector3 cameraPosition { get; protected set; }
         // max odchylenie góra-dó³, mo¿na pomin¹æ, bo dzia³a w miare normalnie 
         // ale jak siê mija bieguny to siê kierunki pierdol¹, wiêc lepiej niech jest
-        public float maxPitch = (float)Math.PI/2;
+        protected float maxPitch = (float)Math.PI / 2;
         // chaos w dostêpach, póŸniej mo¿na poprawiæ co ma byæ public a co private
-        public float yaw { get; set; }
-        public float pitch { get; set; }
-        public Vector3 position { get; protected set; }
+        protected float yaw { get; set; }
+        protected float pitch { get; set; }
+        public Vector3 position { get; private set; }
         private Vector3 desiredPosition;
         private Vector3 target;
         private Vector3 desiredTarget;
         private Vector3 offsetDistance;
         private Matrix cameraRotation;
-        public float speedup { get; set; }
+        protected float speedup { get; set; }
         private float basespeed;
         private float perspective = MathHelper.PiOver2 * 0.9f;
         private float ar;
         private int k = 0;
-        TimeSpan timer = TimeSpan.FromSeconds(0);
-        int duration= 0 ;
+        private TimeSpan timer = TimeSpan.FromSeconds(0);
+        protected int duration = 0;
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up, int p, Viewport view)
             : base(game) {
@@ -63,6 +63,7 @@ namespace Pong3Da {
                 1, 1000);
 
             CreateLookAt();
+            reset();
         }
         public void reset() {
             //int i = 1;

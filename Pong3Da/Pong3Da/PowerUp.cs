@@ -31,7 +31,7 @@ namespace Pong3Da
 
     public class PowerUp : Microsoft.Xna.Framework.GameComponent
     {
-        public Model model;
+        public Model model, green, blue, red, black;
         protected Matrix world = Matrix.Identity;
 
         private float size;
@@ -42,11 +42,12 @@ namespace Pong3Da
         public int duration { get; protected set; }
 
         public bool active { get; protected set; }
-        bool applied = false;
-        int helper = 0;
-        Random r = new Random();
+        public bool applied { get; protected set; }
+        private int helper = 0;
+        private Random r = new Random();
 
-        TimeSpan timer = TimeSpan.FromSeconds(0);
+        private TimeSpan timer = TimeSpan.FromSeconds(0);
+
         public double gettimer()
         {
             return timer.TotalSeconds;
@@ -54,42 +55,51 @@ namespace Pong3Da
         public PowerUp(Game game)
             : base(game)
         {
-            model = Game.Content.Load<Model>(@"models\pu_green");
+            green = Game.Content.Load<Model>(@"models\pu_green");
+            blue = Game.Content.Load<Model>(@"models\pu_blue");
+            red = Game.Content.Load<Model>(@"models\pu_red");
+            black = Game.Content.Load<Model>(@"models\pu_black");
+            model = green;
             size = model.Meshes[0].BoundingSphere.Radius;
             RollPosition();
             RollFlavor();
             active = true;
+            applied = false;
             // TODO: Construct any child components here
         }
-        private void RollFlavor()
+        private bool RollFlavor()
         {
             string s = "pu_green";
             f = flavor.green;
             duration = 10;
-            value = 1.2f;
+            value = 1.3f;
+            model = green;
             int k = r.Next(1, 100);
-            if (k % 10 == 0)
+            if (k % 5 == 0)
             {
                 f = flavor.black;
-                s = "pu_black";
+                model = black;
                 duration = 15;
                 value = 0.4f;
+                return true;
             }
             if (k % 4 == 0)
             {
                 f = flavor.red;
-                s = "pu_red";
                 duration = 5;
-                value = 0.6f;
+                value = 0.5f;
+                model = red;
+                return true;
             }
             if (k % 3 == 0)
             {
                 f = flavor.blue;
-                s = "pu_blue";
                 duration = 5;
                 value = 0.1f;
+                model = blue;
+                return true;
             }
-            model = Game.Content.Load<Model>(@"models\" + s);
+            return true;
         }
         private void RollPosition()
         {
@@ -105,6 +115,18 @@ namespace Pong3Da
             // TODO: Add your initialization code here
 
             base.Initialize();
+        }
+        public Color GetFlavorColor()
+        {
+            if (f == flavor.green)
+                return Color.Green;
+            if (f == flavor.blue)
+                return Color.Blue;
+            if (f == flavor.red)
+                return Color.Red;
+            if (f == flavor.black)
+                return Color.White;
+            return Color.Black;
         }
         public bool Intersect(Vector3 coords, int rad)
         {

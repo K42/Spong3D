@@ -106,6 +106,7 @@ namespace Pong3Da
             Components.Add(powerUp);
             Components.Add(menu);
             Components.Add(duel_menu);
+            powerUp.Enabled = false;
             menu.Enabled = false;
             duel_menu.Enabled = false;
             spaaace = TimeSpan.FromSeconds(0);
@@ -148,6 +149,7 @@ namespace Pong3Da
             Components.Add(camera1);
             Components.Add(camera2);
             Components.Add(ball);
+            Window.Title = "Spong 3D";
 
         }
 
@@ -158,7 +160,7 @@ namespace Pong3Da
 
         #region Logic
         protected override void Update(GameTime gameTime) {
-            SetWindowTitle(gameTime);
+            //SetWindowTitle(gameTime);
             if (Keyboard.GetState().IsKeyDown(Keys.Escape)) //this.Exit();        // Allows the game to exit
             {
                 gs = GameState.MainMenu;
@@ -234,7 +236,13 @@ namespace Pong3Da
                 menu.Visible = false;
                 menu.Enabled = false;
             }
-            if (gs == GameState.InGameDuringRound) HandleInGameDuringRound(gameTime);
+            if (gs == GameState.InGameDuringRound)
+            {
+                HandleInGameDuringRound(gameTime);
+                powerUp.Enabled = true;
+            }
+            else
+                powerUp.Enabled = false;
             if (gs == GameState.SuitUp) 
             {
                 duel_menu.Enabled = true;
@@ -250,8 +258,8 @@ namespace Pong3Da
         }
         protected void handlePowerUp()
         {
-            if (gs != GameState.InGameDuringRound) powerUp.Enabled = false;
-            else powerUp.Enabled = true;
+            //if (gs != GameState.InGameDuringRound) powerUp.Enabled = false;
+            //else powerUp.Enabled = true;
             if (powerUp.active)
             {
                 if (powerUp.Intersect(player1.position, 12))
@@ -508,6 +516,11 @@ namespace Pong3Da
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.X + 50, topBarViewport.Y + 10), Color.White);
+            spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 100, topBarViewport.Y + 10), Color.White);
+            if (powerUp.applied)
+            {
+                spriteBatch.DrawString(topFont, "POWER UP! ", new Vector2(topBarViewport.Width - 100, topBarViewport.Y + 50), powerUp.GetFlavorColor());
+            }
             if (gt == GameType.Time)
             {
                 spriteBatch.DrawString(topFont, "Time left:  " + (time - (int)timer.TotalSeconds),
@@ -549,7 +562,7 @@ namespace Pong3Da
                     spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
                 }
             }
-            spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 50, topBarViewport.Y + 10), Color.White);
+            
             spriteBatch.End();
         }
         protected void DrawArrow(int d)
