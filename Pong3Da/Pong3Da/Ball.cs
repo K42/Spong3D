@@ -125,7 +125,7 @@ namespace Pong3Da {
         }
 
         //rysowanie pilki
-        public void Draw(Camera camera) {
+        public void Draw(PlayerView camera) {
             Matrix[] transforms = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(transforms);
 

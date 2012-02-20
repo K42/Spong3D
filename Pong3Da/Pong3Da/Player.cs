@@ -63,7 +63,7 @@ namespace Pong3Da
             base.Update(gameTime);
         }
         //rysowanie paletki
-        public void Draw(Camera camera)
+        public void Draw(PlayerView camera)
         {
             dim = camera.getDim();
             Matrix[] transforms = new Matrix[model.Bones.Count];
@@ -91,7 +91,7 @@ namespace Pong3Da
                 mesh.Draw();
             }
         }
-        public void Draw(Camera data, Camera viewer)
+        public void Draw(PlayerView data, PlayerView viewer)
         {
             dim = data.getDim();
             Matrix[] transforms = new Matrix[model.Bones.Count];
@@ -105,7 +105,7 @@ namespace Pong3Da
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
-                    be.Alpha = 0.25f;
+                    be.Alpha = 0.1f;
                     be.EnableDefaultLighting();
                     be.Projection = viewer.projection;
                     be.View = viewer.view;

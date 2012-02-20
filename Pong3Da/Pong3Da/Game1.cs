@@ -40,12 +40,12 @@ namespace Pong3Da
         #region Fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        SpriteFont topFont;
+        SpriteFont topFont, alertFont;
         SoundEffect menu_go, game_p_1, game_p_2, game_hit, game_point, game_win;
 
-        protected Camera menu_camera;
-        public Camera camera1 { get; protected set; }
-        public Camera camera2 { get; protected set; }
+        protected PlayerView menu_view;
+        public PlayerView playerView1 { get; protected set; }
+        public PlayerView playerView2 { get; protected set; }
         protected PowerUp powerUp;
         private Ball ball;
         private Player player1, player2;
@@ -62,16 +62,16 @@ namespace Pong3Da
         GameType gt = new GameType();
         TimeSpan spaaace, timer;
         MenuComponent menu, duel_menu;
-        Song dubstep_intro;
+        Song dubstep_intro, music1, music2, music3;
         //inty pomocnicze
         int x, y;
         int turn = -1; //znacznik tury
         int time = 60, points = 20, helper = 0, gspeed = 1;
         int winner;
         //tablica opcji w menu głównym
-        string[] menuItems = { "Resume", "Start duel", "Settings", "Quit" };
+        string[] menuItems = { "Resume", "New duel", "Settings", " Quit" };
         //tablica opcji w menu ekranu startowego
-        string[] duel_prop = { "Game type: ", "Time limit: ", "Points limit: ", "Speed: ", "START!" };
+        string[] duel_prop = { "Game type: ", "Time limit: ", "Points limit: ", "Speed: ", "   START!" };
         //tekstury do menu i strzalki
         Texture2D intro_ball, logo, arrow, bg1, bg2;
         Vector2 speed;
@@ -107,22 +107,29 @@ namespace Pong3Da
         #region Content
         protected override void LoadContent() {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            sphere = new StaticModel(Content.Load<Model>(@"models\sphere"), 0, 0, 0);
-            aX = new StaticModel(Content.Load<Model>(@"models\ring"), 0, 0, 0);
-            aY = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 0, 0);
-            aZ = new StaticModel(Content.Load<Model>(@"models\ring"), 90, 90, 0);
-            skydome = new StaticModel(Content.Load<Model>(@"models\skydome"), 2.0f, 1.0f, false);
-            menudome = new StaticModel(Content.Load<Model>(@"models\skydome"), 2.0f, 1.0f, true); 
+            sphere = new StaticModel(Content.Load<Model>(@"models/sphere"), 0, 0, 0);
+            aX = new StaticModel(Content.Load<Model>(@"models/ring"), 0, 0, 0);
+            aY = new StaticModel(Content.Load<Model>(@"models/ring"), 90, 0, 0);
+            aZ = new StaticModel(Content.Load<Model>(@"models/ring"), 90, 90, 0);
+            skydome = new StaticModel(Content.Load<Model>(@"models/skydome"), 2.0f, 1.0f, false);
+            menudome = new StaticModel(Content.Load<Model>(@"models/skydome"), 2.0f, 1.0f, true); 
             playDome = new BoundingSphere(Vector3.Zero, sphere.model.Meshes[0].BoundingSphere.Radius * 1.0f);
             intro_ball = Content.Load<Texture2D>(@"textures/intro_ball");
             logo = Content.Load<Texture2D>(@"textures/spong");
             arrow = Content.Load<Texture2D>(@"textures/arrow");
             bg1 = Content.Load<Texture2D>(@"textures/bg1");
             bg2 = Content.Load<Texture2D>(@"textures/bg2");
-            dubstep_intro = Content.Load<Song>(@"intro");
+            dubstep_intro = Content.Load<Song>(@"music/intro");
+            music1 = Content.Load<Song>(@"music/music1");
+            music2 = Content.Load<Song>(@"music/music2");
+            music3 = Content.Load<Song>(@"music/music3");
             powerUp = new PowerUp(this);
-            menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), menuItems);
-            duel_menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>("menufont"), duel_prop);
+            menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>(@"fonts/menufont"), menuItems);
+            duel_menu = new MenuComponent(this, spriteBatch, Content.Load<SpriteFont>(@"fonts/menufont"), duel_prop);
+
+            topFont = Content.Load<SpriteFont>(@"fonts/topfont");
+            alertFont = Content.Load<SpriteFont>(@"fonts/alertfont");
+
             Components.Add(powerUp);
             Components.Add(menu);
             Components.Add(duel_menu);
@@ -131,14 +138,12 @@ namespace Pong3Da
             duel_menu.Enabled = false;
             spaaace = TimeSpan.FromSeconds(0);
             
-            menu_go = Content.Load<SoundEffect>(@"sounds/menu_start");
-            game_p_1 = Content.Load<SoundEffect>(@"sounds/game_p_1");
-            game_p_2 = Content.Load<SoundEffect>(@"sounds/game_p_2");
-            game_hit = Content.Load<SoundEffect>(@"sounds/game_hit");
-            game_point = Content.Load<SoundEffect>(@"sounds/game_point");
-            game_win = Content.Load<SoundEffect>(@"sounds/game_win");
-
-            topFont = Content.Load<SpriteFont>("topfont");
+            menu_go = Content.Load<SoundEffect>(@"sounds/menu/menu_start");
+            game_p_1 = Content.Load<SoundEffect>(@"sounds/game/game_p_1");
+            game_p_2 = Content.Load<SoundEffect>(@"sounds/game/game_p_2");
+            game_hit = Content.Load<SoundEffect>(@"sounds/game/game_hit");
+            game_point = Content.Load<SoundEffect>(@"sounds/game/game_point");
+            game_win = Content.Load<SoundEffect>(@"sounds/game/game_win");            
                        
             mainViewport = GraphicsDevice.Viewport;
             leftViewport = mainViewport;
@@ -159,26 +164,26 @@ namespace Pong3Da
             speed = new Vector2(rnd.Next(-10, 10), rnd.Next(-10, 10));
 
 
-            camera1 = new Camera(this, 1, leftViewport);
-            camera2 = new Camera(this, 2, rightViewport);
-            menu_camera = new Camera(this, 2, mainViewport);
+            playerView1 = new PlayerView(this, 1, leftViewport);
+            playerView2 = new PlayerView(this, 2, rightViewport);
+            menu_view = new PlayerView(this, 2, mainViewport);
 
             ball = new Ball(this);
             player1 = new Player(this, 1);
             player2 = new Player(this, 2);
 
-            Components.Add(camera1);
-            Components.Add(camera2);
+            Components.Add(playerView1);
+            Components.Add(playerView2);
             Components.Add(ball);
             Window.Title = "Spong 3D";
             setSpeed(1);
-
+            MediaPlayer.Volume = 0.7f;
         }
         protected void setSpeed(int k)
         {
             ball.setSpeed(k);
-            camera1.setSpeed(k);
-            camera2.setSpeed(k);
+            playerView1.setSpeed(k);
+            playerView2.setSpeed(k);
         }
         protected override void UnloadContent() {
             // TODO: Unload any non ContentManager content here
@@ -190,6 +195,7 @@ namespace Pong3Da
             //Pauza i wyjście do menu
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
+                if (gs == GameState.InGameDuringRound) MediaPlayer.Stop();
                 gs = GameState.MainMenu;
             }
             //pauza w grze
@@ -234,7 +240,7 @@ namespace Pong3Da
             base.Update(gameTime);
         }
         //obsluga power-upow, niestety na sztywno, ale sie sprawdza
-        protected void handlePowerUp()
+        protected void HandlePowerUp()
         {
             //if (gs != GameState.InGameDuringRound) powerUp.Enabled = false;
             //else powerUp.Enabled = true;
@@ -244,20 +250,20 @@ namespace Pong3Da
                 {
                     if (powerUp.f == flavor.green)
                     {
-                        camera1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
-                    if (powerUp.f == flavor.blue)
+                    if (powerUp.f == flavor.blue || powerUp.f == flavor.yellow)
                     {
                         ball.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                     if (powerUp.f == flavor.red)
                     {
-                        camera2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                     if (powerUp.f == flavor.black)
                     {
-                        camera1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
-                        camera2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                         ball.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                 }
@@ -265,25 +271,45 @@ namespace Pong3Da
                 {
                     if (powerUp.f == flavor.green)
                     {
-                        camera2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
-                    if (powerUp.f == flavor.blue)
+                    if (powerUp.f == flavor.blue || powerUp.f == flavor.yellow)
                     {
                         ball.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                     if (powerUp.f == flavor.red)
                     {
-                        camera1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                     if (powerUp.f == flavor.black)
                     {
-                        camera1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
-                        camera2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView1.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
+                        playerView2.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                         ball.PowerUp(powerUp.duration, powerUp.ApplyPowerUp());
                     }
                 }
             }
 
+        }
+        //muzyka
+        protected void MusicHandler()
+        {
+            if (MediaPlayer.State != MediaState.Playing) MediaPlayer.Play(music1);
+            if (Keyboard.GetState().IsKeyDown(Keys.F1))
+            {
+                MediaPlayer.Stop();
+                MediaPlayer.Play(music1);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.F2))
+            {
+                MediaPlayer.Stop();
+                MediaPlayer.Play(music2);
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.F3))
+            {
+                MediaPlayer.Stop();
+                MediaPlayer.Play(music3);
+            }
         }
         //wlacz/wylacz dzwiek
         protected void SetSound(bool set)
@@ -317,8 +343,8 @@ namespace Pong3Da
                 player1.reset();
                 player2.reset();
                 turn = -1;
-                camera1.reset();
-                camera2.reset();
+                playerView1.reset();
+                playerView2.reset();
             }
         }
         //obsluga glownego menu
@@ -327,7 +353,9 @@ namespace Pong3Da
             string sound;
             if (playSound) sound = "on";
             else sound = "off";
-            if (MediaPlayer.State != MediaState.Playing) if (playSound) MediaPlayer.Play(dubstep_intro);
+            if (MediaPlayer.State == MediaState.Stopped) 
+                if (playSound) 
+                    MediaPlayer.Play(dubstep_intro);
             if (menu.SelectedIndex == 0)
                 if (!ingame)
                     menu.SelectedIndex++;
@@ -363,7 +391,7 @@ namespace Pong3Da
                 if (Keyboard.GetState().IsKeyDown(Keys.Left))
                 {
                     SetSound(true);
-                    if (MediaPlayer.State != MediaState.Playing) MediaPlayer.Play(dubstep_intro);
+                    if (MediaPlayer.State == MediaState.Stopped) MediaPlayer.Play(dubstep_intro);
                 }
                 if (Keyboard.GetState().IsKeyDown(Keys.Right))
                 {
@@ -463,12 +491,8 @@ namespace Pong3Da
                     ingame = true;
                     setSpeed(gspeed);
                     if (playSound) menu_go.Play();
-                    for (int i = 0; ; i++)
-                    {
-                        MediaPlayer.Volume -= 0.0002f;
-                        if (MediaPlayer.Volume <= 0) break;
-                    }
                     MediaPlayer.Stop();
+                    if (playSound) MediaPlayer.Play(music1);
                     t = true;
                     gs = GameState.InGameDuringRound;                   
                 }
@@ -503,6 +527,7 @@ namespace Pong3Da
         //obsluga gry
         protected void HandleInGameDuringRound(GameTime gameTimer)
         {
+            if (playSound) MusicHandler();
             BoundingSphere b = new BoundingSphere(ball.position, ball.model.Meshes[0].BoundingSphere.Radius * 1.0f);
             if (Vector3.Distance(b.Center, playDome.Center) < playDome.Radius - b.Radius)
             {
@@ -558,7 +583,7 @@ namespace Pong3Da
                 }
             }
             winner = WinCheck(gameTimer);
-            handlePowerUp();
+            HandlePowerUp();
         }        
         #endregion
 
@@ -568,7 +593,7 @@ namespace Pong3Da
         {           
             GraphicsDevice.Clear(Color.Black);
             menudome.Update();
-            menudome.Draw(menu_camera);
+            menudome.Draw(menu_view);
             spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             spriteBatch.Draw(logo, new Vector2(mainViewport.Width/2 - 167, 10), Color.White);
             spriteBatch.Draw(intro_ball, new Vector2(x, y), Color.Gainsboro);
@@ -577,21 +602,15 @@ namespace Pong3Da
         protected void DrawDuelPreparation()
         {
             menudome.Update();
-            menudome.Draw(menu_camera);
+            menudome.Draw(menu_view);
         }
         //gorny panel podczas rozgrywki
         protected void TopBar()
         {
             spriteBatch.Begin();
-            spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.Width / 2 - 200, topBarViewport.Y + 10), Color.White);
-            spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 100, topBarViewport.Y + 10), Color.White);
-            if (powerUp.applied)
-            {
-                int k = 0;
-                if (camera1.affected) k = 1;
-                else if (camera2.affected) k = 2;
-                spriteBatch.DrawString(topFont, powerUp.GetFlavorText(k), new Vector2(topBarViewport.Width - 300, topBarViewport.Y + 50), powerUp.GetFlavorColor());
-            }
+            spriteBatch.DrawString(topFont, "Player 1:  " + player1.pts, new Vector2(topBarViewport.Width / 2 - 300, topBarViewport.Y + 10), Color.White);
+            spriteBatch.DrawString(topFont, "Player 2:  " + player2.pts, new Vector2(topBarViewport.Width / 2 + 200, topBarViewport.Y + 10), Color.White);
+            
             if (gt == GameType.Time)
             {
                 spriteBatch.DrawString(topFont, "Time left:  " + (time - (int)timer.TotalSeconds),
@@ -610,26 +629,34 @@ namespace Pong3Da
                 {
                     if (t) if (playSound) game_win.Play();
                     t = false;
-                    spriteBatch.DrawString(topFont, "  PLAYER " + winner + " WINS!",
-                        new Vector2(topBarViewport.Width / 2 - 95, topBarViewport.Y + 30), Color.Yellow);
+                    spriteBatch.DrawString(topFont, "PLAYER " + winner + " WINS!",
+                        new Vector2(topBarViewport.Width / 2 - 95, topBarViewport.Y + 5), Color.Yellow);
                 }
                 else
                 {
                     spriteBatch.DrawString(topFont, "REMIS!",
-                        new Vector2(topBarViewport.Width / 2 - 90, topBarViewport.Y + 30), Color.Yellow);
+                        new Vector2(topBarViewport.Width / 2 - 90, topBarViewport.Y + 5), Color.Yellow);
                 }
                 spriteBatch.DrawString(topFont, "press ESC to exit",
-                    new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
+                    new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 30), Color.White);
             }
             else
             {
+                if(point)
+                    spriteBatch.DrawString(topFont, "Point!", new Vector2(topBarViewport.Width / 2 - 30, topBarViewport.Y + 40), Color.Yellow);
                 if (ball.freeze)
                     spriteBatch.DrawString(topFont, "PRESS SPACE TO START", new Vector2(topBarViewport.Width / 2 - 100, topBarViewport.Y + 50), Color.White);
-                
+                if (powerUp.applied && !ball.freeze)
+                {
+                    int k = 0;
+                    if (playerView1.affected) k = 1;
+                    else if (playerView2.affected) k = 2;
+                    spriteBatch.DrawString(alertFont, powerUp.GetFlavorText(k) + " " + (float)((int)(((float)powerUp.duration-powerUp.gettimer())*100))/100, new Vector2(topBarViewport.Width / 2 - 180, topBarViewport.Y + 70), powerUp.GetFlavorColor());
+                }
                 int p;
                 if (turn < 0) p = 1;
                 else p = 2;
-                spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 50, topBarViewport.Y + 30), Color.White);
+                spriteBatch.DrawString(topFont, "Player: " + p, new Vector2(topBarViewport.Width / 2 - 40, topBarViewport.Y + 5), Color.White);
             }
             
             spriteBatch.End();
@@ -676,52 +703,52 @@ namespace Pong3Da
         {
             if (ball.freeze)
             {
-                camera1.Enabled = false;
-                camera2.Enabled = false;
+                playerView1.Enabled = false;
+                playerView2.Enabled = false;
             }
             else
             {
-                camera1.Enabled = true;
-                camera2.Enabled = true;
+                playerView1.Enabled = true;
+                playerView2.Enabled = true;
             }
 
             graphics.GraphicsDevice.Viewport = mainViewport;
             TopBar();
             //prawy do lewego!!
             graphics.GraphicsDevice.Viewport = left_view;
-            skydome.Draw(camera1);
-            ball.Draw(camera1);
-            powerUp.Draw(camera1);
+            skydome.Draw(playerView1);
+            ball.Draw(playerView1);
+            powerUp.Draw(playerView1);
             
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             
-            player1.Draw(camera1);
-            player2.Draw(camera2, camera1);
-            sphere.Draw(camera1);
-            aX.Draw(camera1);
-            aY.Draw(camera1);
-            aZ.Draw(camera1);
+            player1.Draw(playerView1);
+            player2.Draw(playerView2, playerView1);
+            sphere.Draw(playerView1);
+            aX.Draw(playerView1);
+            aY.Draw(playerView1);
+            aZ.Draw(playerView1);
             GraphicsDevice.BlendState = BlendState.Opaque;
-            DrawArrow(camera1.getDirection());
+            DrawArrow(playerView1.getDirection());
 
             graphics.GraphicsDevice.Viewport = right_view;
 
-            skydome.Draw(camera2);
-            ball.Draw(camera2);
-            powerUp.Draw(camera2);
+            skydome.Draw(playerView2);
+            ball.Draw(playerView2);
+            powerUp.Draw(playerView2);
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
            
-            player2.Draw(camera2);
-            player1.Draw(camera1, camera2);
+            player2.Draw(playerView2);
+            player1.Draw(playerView1, playerView2);
             //player1.Draw(camera2);
-            sphere.Draw(camera2);
-            aX.Draw(camera2);
-            aY.Draw(camera2);
-            aZ.Draw(camera2);
+            sphere.Draw(playerView2);
+            aX.Draw(playerView2);
+            aY.Draw(playerView2);
+            aZ.Draw(playerView2);
             GraphicsDevice.BlendState = BlendState.Opaque;
-            DrawArrow(camera2.getDirection());
+            DrawArrow(playerView2.getDirection());
 
         }
         protected override void Draw(GameTime gameTime) {

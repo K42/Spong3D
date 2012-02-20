@@ -36,6 +36,8 @@ namespace Pong3Da
         private SoundEffect menu_switch;
         public bool playSound { get; set; }
 
+        int shake = 1;
+
         public int SelectedIndex
         {
             get { return selectedIndex; }
@@ -59,7 +61,7 @@ namespace Pong3Da
             this.spriteFont = spriteFont;
             this.menuItems = menuItems;
             this.playSound = true;
-            menu_switch = Game.Content.Load<SoundEffect>(@"sounds/menu_switch");
+            menu_switch = Game.Content.Load<SoundEffect>(@"sounds/menu/menu_switch");
             MeasureMenu();
         }
 
@@ -123,9 +125,17 @@ namespace Pong3Da
             for (int i = 0; i < menuItems.Length; i++)
             {
                 if (i == selectedIndex)
+                {
                     tint = hilite;
+                    if (shake == 0) shake++;
+                    shake *= -1;
+                }
                 else
+                {
                     tint = normal;
+                    shake = 0;
+                }
+                location.X += shake;
                 spriteBatch.DrawString(spriteFont, menuItems[i], location, tint);
                 location.Y += spriteFont.LineSpacing + 5;
             }

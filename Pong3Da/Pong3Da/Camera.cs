@@ -14,15 +14,13 @@ namespace Pong3Da {
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class Camera : Microsoft.Xna.Framework.GameComponent {
+    public class PlayerView : Microsoft.Xna.Framework.GameComponent {
         public Matrix view { get; protected set; }
         public Matrix projection { get; protected set; }
-        int p; //tymczasowo, przeniesc do playera razem z inputem
-        //public Vector3 cameraPosition { get; protected set; }
+        int p; 
         // max odchylenie góra-dó³, mo¿na pomin¹æ, bo dzia³a w miare normalnie 
-        // ale jak siê mija bieguny to siê kierunki pierdol¹, wiêc lepiej niech jest
+        // ale jak siê mija bieguny to siê kierunki mieszaj¹, wygodniej jest tak
         protected float maxPitch = (float)Math.PI / 2;
-        // chaos w dostêpach, póŸniej mo¿na poprawiæ co ma byæ public a co private
         protected float yaw { get; set; }
         protected float pitch { get; set; }
         public Vector3 position { get; private set; }
@@ -40,7 +38,7 @@ namespace Pong3Da {
         public bool affected { get; private set; }
         protected int bonusDuration = 0;
 
-        public Camera(Game game, int p, Viewport view)
+        public PlayerView(Game game, int p, Viewport view)
             : base(game) {
                 this.p = p;
             baseSpeed = 1.0f;
@@ -66,9 +64,8 @@ namespace Pong3Da {
             }
         }
         //reset pozycji
-        public void reset() {
-            
-
+        public void reset() 
+        {
             offsetDistance = new Vector3(0, 0, 85);
             if (p == 1)
             {
@@ -181,7 +178,7 @@ namespace Pong3Da {
                 }
             }
         }
-        public Camera getInstance()
+        public PlayerView getInstance()
         {
             return this;
         }
@@ -196,13 +193,11 @@ namespace Pong3Da {
             cameraRotation = Matrix.CreateRotationX(pitch) * Matrix.CreateRotationY(yaw);
 
             desiredPosition = Vector3.Transform(offsetDistance, cameraRotation);
-            //desiredPosition += chasedObjectsWorld.Translation;
             position = desiredPosition;
             target = Vector3.Zero;
         }
 
         private void CreateLookAt() {
-            //view = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
             view = Matrix.CreateLookAt(position, target, cameraRotation.Up);
         }
         //potrzebne przy wyswietlaniu paletki

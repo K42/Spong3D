@@ -29,12 +29,15 @@ namespace Pong3Da
             green,
             blue,
             red,
-            black
+            black,
+            yellow
         }
 
     public class PowerUp : Microsoft.Xna.Framework.GameComponent
     {
-        public Model model, green, blue, red, black;
+        protected SoundEffect powerup_pop, powerup_lost, powerup_pick, powerup_fade;
+
+        public Model model, green, blue, red, black, yellow;
         protected Matrix world = Matrix.Identity;
 
         private float size;
@@ -60,10 +63,16 @@ namespace Pong3Da
         public PowerUp(Game game)
             : base(game)
         {
-            green = Game.Content.Load<Model>(@"models\pu_green");
-            blue = Game.Content.Load<Model>(@"models\pu_blue");
-            red = Game.Content.Load<Model>(@"models\pu_red");
-            black = Game.Content.Load<Model>(@"models\pu_black");
+            green = Game.Content.Load<Model>(@"models/pu_green");
+            blue = Game.Content.Load<Model>(@"models/pu_blue");
+            red = Game.Content.Load<Model>(@"models/pu_red");
+            black = Game.Content.Load<Model>(@"models/pu_black");
+            yellow = Game.Content.Load<Model>(@"models/pu_yellow");
+            powerup_pop = Game.Content.Load<SoundEffect>(@"sounds/powerup/powerup_pop");
+            powerup_lost = Game.Content.Load<SoundEffect>(@"sounds/powerup/powerup_lost");
+            powerup_pick = Game.Content.Load<SoundEffect>(@"sounds/powerup/powerup_pick");
+            powerup_fade = Game.Content.Load<SoundEffect>(@"sounds/powerup/powerup_fade");
+
             model = green;
             size = model.Meshes[0].BoundingSphere.Radius;
             RollPosition();
@@ -94,6 +103,14 @@ namespace Pong3Da
                 duration = 7;
                 value = 0.5f;
                 model = red;
+                return true;
+            }
+            if (k % 2 == 0)
+            {
+                f = flavor.yellow;
+                duration = 3;
+                value = 2.0f;
+                model = yellow;
                 return true;
             }
             if (k % 3 == 0)
@@ -133,22 +150,26 @@ namespace Pong3Da
                 return Color.Red;
             if (f == flavor.black)
                 return Color.White;
+            if (f == flavor.yellow)
+                return Color.Yellow;
             return Color.Black;
         }
         public string GetFlavorText(int player)
         {
             if (f == flavor.green)
-                return "PLAYER " + player + " SPEED UP!";
+                return "   PLAYER " + player + " SPEED-UP!";
             if (f == flavor.blue)
-                return "CRAWLER-BALL!";
+                return "    CRAWLER-BALL!";
             if (f == flavor.red)
             {
                 if (player == 1) player = 2;
                 if (player == 2) player = 1;
-                return "PLAYER " + player + " SLOOOOOW DOOOOWN";
+                return "PLAYER " + player + " SLOOOMOOO";
             }
             if (f == flavor.black)
-                return "BULLET TIME!";
+                return "    BULLET TIME!";
+            if (f == flavor.yellow)
+                return "    THUNDER BALL!";
             return "";
         }
         //kolizje
@@ -157,7 +178,7 @@ namespace Pong3Da
             if (active)
             {
                 if (Vector3.Distance(coords, position) <= (rad + size))
-                {
+                {                    
                     return true;
                 }
                 else return false;
@@ -170,6 +191,7 @@ namespace Pong3Da
         {
             applied = true;
             active = false;
+            powerup_pick.Play();
             timer = TimeSpan.FromSeconds(0);
             return value;
         }
@@ -187,6 +209,7 @@ namespace Pong3Da
                 {
                     active = false;
                     timer = TimeSpan.FromSeconds(0);
+                    powerup_lost.Play();
                 }
             }
             if (!active && !applied)
@@ -197,6 +220,7 @@ namespace Pong3Da
                     RollFlavor();
                     RollPosition();
                     active = true;
+                    powerup_pop.Play();
                 }
             }
             if (applied)
@@ -206,12 +230,13 @@ namespace Pong3Da
                 {
                     active = false;
                     applied = false;
+                    powerup_fade.Play();
                 }
             }
             base.Update(gameTime);
         }
 
-        public void Draw(Camera camera)
+        public void Draw(PlayerView camera)
         {
             if (active)
             {
